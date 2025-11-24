@@ -1,0 +1,15 @@
+.vscode
+.idea
+test_login.js
+uploads
+target
+
+backend/CodeFlow/.idea
+backend/CodeFlow/.mvn
+backend/CodeFlow/mvnw
+backend/CodeFlow/mvnw.cmd
+backend/CodeFlow/HELP.md
+
+frontend/code-flow/node_modules
+frontend/code-flow/public
+
