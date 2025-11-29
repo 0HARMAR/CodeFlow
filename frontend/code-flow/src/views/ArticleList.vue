@@ -1,7 +1,7 @@
 <template>
   <div class="article-list">
     <h1>博客文章列表</h1>
-    
+
     <div class="articles">
       <div class="article-item" v-for="article in articles" :key="article.id">
         <router-link :to="`/article/${article.id}`">
@@ -36,11 +36,11 @@ export default {
     async fetchArticles() {
       this.loading = true;
       this.error = '';
-      
+
       try {
         // 调用后端API获取文章列表
         const response = await axios.get('http://localhost:8080/api/articles');
-        
+
         // 将后端返回的数据转换为前端需要的格式
         this.articles = response.data.map(article => ({
           id: article.id,

@@ -27,13 +27,28 @@
       
       <div class="form-group">
         <label for="content">文章内容</label>
-        <textarea 
-          id="content" 
-          v-model="articleForm.content" 
-          placeholder="请输入文章内容"
-          rows="15"
-          required
-        ></textarea>
+        <div class="editor-toolbar">
+          <button @click="editor.chain().focus().toggleBold().run()">B</button>
+          <button @click="editor.chain().focus().toggleItalic().run()"><i>I</i></button>
+          <button @click="editor.chain().focus().toggleStrike().run()"><s>S</s></button>
+
+          <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()">H1</button>
+          <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()">H2</button>
+          <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()">H3</button>
+
+          <button @click="editor.chain().focus().toggleBulletList().run()">• 列表</button>
+          <button @click="editor.chain().focus().toggleOrderedList().run()">1. 列表</button>
+
+          <button @click="editor.chain().focus().toggleBlockquote().run()">❝ 引用</button>
+          <button @click="editor.chain().focus().toggleCodeBlock().run()">{} 代码</button>
+
+          <button @click="editor.chain().focus().undo().run()">↶ 撤销</button>
+          <button @click="editor.chain().focus().redo().run()">↷ 重做</button>
+        </div>
+
+        <div class="editor-block">
+          <EditorContent :editor="editor" class="editor-content"/>
+        </div>
       </div>
       
       <div class="form-actions">
@@ -45,77 +60,19 @@
 </template>
 
 <script>
-import axios from 'axios';
+import logic from './CreateArticle.logic'
+import {EditorContent} from "@tiptap/vue-3";
 
 export default {
   name: 'CreateArticle',
-  data() {
-    return {
-      articleForm: {
-        title: '',
-        category: '',
-        content: ''
-      },
-      submitting: false,
-      error: ''
-    }
-  },
-  mounted() {
-    // 检查用户是否登录
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      // 如果未登录，重定向到登录页
-      this.$router.push('/login');
-    }
-  },
-  methods: {
-    async handleSubmit() {
-      this.submitting = true;
-      this.error = '';
-      
-      try {
-        const userData = localStorage.getItem('user');
-        const user = JSON.parse(userData);
-        
-        // 准备提交数据
-        const articleData = {
-          title: this.articleForm.title,
-          category: this.articleForm.category,
-          content: this.articleForm.content,
-          publishDate: new Date(),
-          authorId: user.id
-        };
-        
-        // 调用后端API提交文章
-        await axios.post('http://localhost:8080/api/articles', articleData);
-        
-        // 提交成功，重定向到文章列表页
-        alert('文章发布成功！');
-        this.$router.push('/articles');
-      } catch (error) {
-        console.error('发布文章失败:', error);
-        this.error = '发布文章失败，请稍后重试';
-      } finally {
-        this.submitting = false;
-      }
-    },
-    handleCancel() {
-      // 询问用户是否放弃编辑
-      if (this.articleForm.title || this.articleForm.content) {
-        if (confirm('确定要放弃编辑吗？已输入的内容将会丢失。')) {
-          this.$router.push('/articles');
-        }
-      } else {
-        this.$router.push('/articles');
-      }
-    }
-  }
-}
+  components: {EditorContent},
+  ...logic
+};
 </script>
 
 <style scoped>
 .create-article {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -217,5 +174,44 @@ export default {
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
+}
+
+.editor-block {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 300px;
+  background: white;
+}
+
+.editor-content {
+  min-height: 250px;
+}
+
+.editor-content p {
+  line-height: 1.7;
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.editor-toolbar button {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.editor-toolbar button:hover {
+  background: #e6e6e6;
 }
 </style>

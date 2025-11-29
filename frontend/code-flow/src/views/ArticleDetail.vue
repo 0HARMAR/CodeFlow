@@ -19,67 +19,9 @@
 </template>
 
 <script>
-import axios from 'axios';
+import ArticleDetailLogic from './ArticleDetail.js'
 
-export default {
-  name: 'ArticleDetail',
-  props: {
-    id: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      article: {
-        id: '',
-        title: '',
-        date: '',
-        category: '',
-        content: ''
-      },
-      loading: false,
-      error: ''
-    }
-  },
-  mounted() {
-    this.fetchArticle()
-  },
-  methods: {
-    async fetchArticle() {
-      this.loading = true;
-      this.error = '';
-      
-      try {
-        // 调用后端API获取文章详情
-        const response = await axios.get(`http://localhost:8080/api/articles/${this.id}`);
-        const articleData = response.data;
-        
-        // 设置文章数据
-        this.article = {
-          id: articleData.id,
-          title: articleData.title,
-          date: articleData.date || new Date(articleData.publishDate || new Date()).toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-          }),
-          category: articleData.category,
-          content: this.formatContent(articleData.content)
-        };
-      } catch (error) {
-        console.error('获取文章详情失败:', error);
-        this.error = '获取文章详情失败，请稍后重试';
-      } finally {
-        this.loading = false;
-      }
-    },
-    formatContent(content) {
-      // 简单的内容格式化，根据需要可以扩展
-      return content;
-    }
-  }
-  }
+export default ArticleDetailLogic
 </script>
 
 <style scoped>
