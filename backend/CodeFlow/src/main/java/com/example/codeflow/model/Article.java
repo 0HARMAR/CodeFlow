@@ -30,7 +30,14 @@ public class Article {
     
     @Column(name = "updated_at")
     private Date updatedAt;
-    
+
+    @Column(nullable = false)
+    private Integer likes = 0;
+
+    @Column(nullable = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private String ownerId;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -94,5 +101,21 @@ public class Article {
     
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Integer likes) {
+        this.likes = likes;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getOwnerId() {
+        return this.ownerId;
     }
 }

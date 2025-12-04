@@ -1,5 +1,7 @@
 package com.example.codeflow.dto;
 
+import com.example.codeflow.model.User;
+
 import java.util.Date;
 
 public class ArticleDTO {
@@ -9,7 +11,10 @@ public class ArticleDTO {
     private String content;
     private String date;
     private String category;
-    
+
+    private String authorId;
+    private Integer likes;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -57,5 +62,21 @@ public class ArticleDTO {
     
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
+    }
+
+    public String getAuthorId() {
+        return authorId;
+    }
+
+    public Integer getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Integer likes) {
+        this.likes = likes;
     }
 }

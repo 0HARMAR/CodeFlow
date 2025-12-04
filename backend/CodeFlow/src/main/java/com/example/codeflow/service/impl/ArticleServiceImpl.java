@@ -2,8 +2,10 @@ package com.example.codeflow.service.impl;
 
 import com.example.codeflow.dto.ArticleDTO;
 import com.example.codeflow.model.Article;
+import com.example.codeflow.model.User;
 import com.example.codeflow.repository.ArticleRepository;
 import com.example.codeflow.service.ArticleService;
+import com.example.codeflow.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +80,10 @@ public class ArticleServiceImpl implements ArticleService {
         article.setPublishDate(now);
         article.setCreatedAt(now);
         article.setUpdatedAt(now);
+
+        String authorId = articleDTO.getAuthorId();
+        article.setOwnerId(authorId);
+        article.setLikes(articleDTO.getLikes());
         
         // 保存到数据库
         Article savedArticle = articleRepository.save(article);
@@ -99,7 +105,9 @@ public class ArticleServiceImpl implements ArticleService {
         if (article.getPublishDate() != null) {
             dto.setDate(dateFormat.format(article.getPublishDate()));
         }
-        
+
+        dto.setAuthorId(article.getOwnerId());
+        dto.setLikes(article.getLikes());
         return dto;
     }
 }

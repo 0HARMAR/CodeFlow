@@ -51,7 +51,8 @@ export default {
                     category: this.articleForm.category,
                     content: this.articleForm.content,
                     publishDate: new Date(),
-                    authorId: user.id
+                    authorId: user.id,
+                    likes: 0
                 };
 
                 await axios.post('http://localhost:8080/api/articles', articleData);

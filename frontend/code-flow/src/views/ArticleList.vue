@@ -9,6 +9,8 @@
           <p class="excerpt">{{ article.excerpt }}</p>
           <div class="article-meta">
             <span class="date">发布于：{{ article.date }}</span>
+            <span class="author">作者：{{ article.author }}</span>
+            <span class="likes">赞：{{ article.likes }}</span>
             <span class="category">分类：{{ article.category }}</span>
           </div>
         </router-link>
@@ -51,8 +53,23 @@ export default {
             month: '2-digit',
             day: '2-digit'
           }),
-          category: article.category
+          category: article.category,
+          author: '匿名',
+          likes: article.likes || 0,
         }));
+
+        // fetch and set author name
+        for (let i = 0; i < response.data.length; i++) {
+          const ownerId = response.data[i].authorId;
+
+          if (!ownerId) {
+            this.articles[i].author = '匿名';
+            continue;
+          }
+
+          const author = await axios.get(`http://localhost:8080/api/users/${ownerId}`);
+          this.articles[i].author = author.data.username;
+        }
       } catch (error) {
         console.error('获取文章列表失败:', error);
         this.error = '获取文章列表失败，请稍后重试';
@@ -130,5 +147,15 @@ export default {
   background: #f0f0f0;
   padding: 0.2rem 0.8rem;
   border-radius: 16px;
+}
+
+.author, .likes {
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+}
+.likes {
+  color: #e74c3c;
+  font-weight: bold;
 }
 </style>
