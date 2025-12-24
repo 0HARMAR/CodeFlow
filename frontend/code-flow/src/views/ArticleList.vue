@@ -3,13 +3,13 @@
     <h1>博客文章列表</h1>
 
     <div class="articles">
-      <div class="article-item" v-for="article in articles" :key="article.id">
+      <div class="article-item" v-for="article in store.articles" :key="article.id">
         <router-link :to="`/article/${article.id}`">
           <h2>{{ article.title }}</h2>
           <p class="excerpt">{{ article.excerpt }}</p>
           <div class="article-meta">
             <span class="date">发布于：{{ article.date }}</span>
-            <span class="author">作者：{{ article.author }}</span>
+            <span class="author">作者：{{ authorMap[article.authorId] }}</span>
             <span class="likes">赞：{{ article.likes }}</span>
             <span class="category">分类：{{ article.category }}</span>
           </div>
@@ -19,66 +19,33 @@
   </div>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
+import { reactive, onMounted } from "vue";
+import { useArticleStore } from "../stores/article";
+import axios from "axios";
 
-export default {
-  name: 'ArticleList',
-  data() {
-    return {
-      articles: [],
-      loading: false,
-      error: ''
-    }
-  },
-  mounted() {
-    this.fetchArticles();
-  },
-  methods: {
-    async fetchArticles() {
-      this.loading = true;
-      this.error = '';
+const store = useArticleStore()
 
-      try {
-        // 调用后端API获取文章列表
-        const response = await axios.get('http://localhost:8080/api/articles');
+const authorMap = reactive({})
 
-        // 将后端返回的数据转换为前端需要的格式
-        this.articles = response.data.map(article => ({
-          id: article.id,
-          title: article.title,
-          excerpt: article.content.substring(0, 100) + '...',
-          date: article.date || new Date(article.publishDate || new Date()).toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-          }),
-          category: article.category,
-          author: '匿名',
-          likes: article.likes || 0,
-        }));
-
-        // fetch and set author name
-        for (let i = 0; i < response.data.length; i++) {
-          const ownerId = response.data[i].authorId;
-
-          if (!ownerId) {
-            this.articles[i].author = '匿名';
-            continue;
-          }
-
-          const author = await axios.get(`http://localhost:8080/api/users/${ownerId}`);
-          this.articles[i].author = author.data.username;
-        }
-      } catch (error) {
-        console.error('获取文章列表失败:', error);
-        this.error = '获取文章列表失败，请稍后重试';
-      } finally {
-        this.loading = false;
-      }
-    }
+onMounted(async () => {
+  if (store.articles.length === 0) {
+    await store.fetchArticles()
   }
+
+  for (const article of store.articles) {
+    loadAuthor(article.authorId)
+  }
+})
+
+const loadAuthor = async (id) => {
+  if (authorMap[id]) return
+
+  const res = await axios.get(`http://localhost:8080/api/users/${id}`)
+  console.log(res.data.username)
+  authorMap[id] = res.data.username
 }
+
 </script>
 
 <style scoped>

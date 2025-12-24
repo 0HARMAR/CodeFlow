@@ -46,4 +46,20 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ArticleDTO> updateArticle(
+            @PathVariable Long id,
+            @RequestBody ArticleDTO updatedArticle) {
+        try {
+            ArticleDTO article = articleService.updateArticle(id, updatedArticle);
+            if (article == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(article);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

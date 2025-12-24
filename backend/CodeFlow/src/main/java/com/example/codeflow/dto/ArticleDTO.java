@@ -15,6 +15,9 @@ public class ArticleDTO {
     private String authorId;
     private Integer likes;
 
+    private Date updatedAt;
+    private Date createdAt;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -78,5 +81,21 @@ public class ArticleDTO {
 
     public void setLikes(Integer likes) {
         this.likes = likes;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }

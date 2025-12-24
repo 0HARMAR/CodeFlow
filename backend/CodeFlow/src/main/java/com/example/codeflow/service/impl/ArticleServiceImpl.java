@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -92,6 +93,30 @@ public class ArticleServiceImpl implements ArticleService {
         return convertToDTO(savedArticle);
     }
 
+    @Override
+    public ArticleDTO updateArticle(Long id, ArticleDTO updatedArticle) {
+        Optional<Article> existingOpt = articleRepository.findById(id);
+        if (!existingOpt.isPresent()) {
+            return null;
+        }
+
+        Article existing = existingOpt.get();
+        existing.setId(updatedArticle.getId());
+        existing.setTitle(updatedArticle.getTitle());
+        existing.setExcerpt(updatedArticle.getExcerpt());
+        existing.setContent(updatedArticle.getContent());
+        existing.setCategory(updatedArticle.getCategory());
+        existing.setUpdatedAt(updatedArticle.getUpdatedAt());
+        existing.setCreatedAt(updatedArticle.getCreatedAt());
+        existing.setLikes(updatedArticle.getLikes());
+        existing.setOwnerId(updatedArticle.getAuthorId());
+
+        // save to database
+        Article savedArticle = articleRepository.save(existing);
+
+        return convertToDTO(existing);
+    }
+
     // 将Article实体转换为ArticleDTO
     private ArticleDTO convertToDTO(Article article) {
         ArticleDTO dto = new ArticleDTO();
@@ -108,6 +133,10 @@ public class ArticleServiceImpl implements ArticleService {
 
         dto.setAuthorId(article.getOwnerId());
         dto.setLikes(article.getLikes());
+
+        dto.setCreatedAt(article.getCreatedAt());
+        dto.setUpdatedAt(article.getUpdatedAt());
+
         return dto;
     }
 }

@@ -5,13 +5,21 @@
       <div class="article-meta">
         <span class="date">发布于：{{ article.date }}</span>
         <span class="category">分类：{{ article.category }}</span>
+        <span class="author">作者：{{ article.author }}</span>
       </div>
     </div>
     
     <div class="article-content">
       <div v-html="article.content"></div>
     </div>
-    
+
+    <div class = "like-section">
+      <button class="like-btn" @click="toggleLike">
+        <span v-if="liked">❤️ liked</span>
+        <span v-else>🤍 like</span>
+      </button>
+      <span class="like-count">like: {{ article.likes }}</span>
+    </div>
     <div class="article-actions">
       <router-link to="/articles" class="btn-back">返回列表</router-link>
     </div>
@@ -26,7 +34,7 @@ export default ArticleDetailLogic
 
 <style scoped>
 .article-detail {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -93,4 +101,37 @@ export default ArticleDetailLogic
 .btn-back:hover {
   background: #5a67d8;
 }
+
+.like-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.like-btn {
+  background: none;
+  border: 2px solid #ff6b81;
+  color: #ff6b81;
+  padding: 0.6rem 1.4rem;
+  font-size: 1.1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.like-btn:hover {
+  background: #ff6b81;
+  color: white;
+}
+
+.like-btn:active {
+  transform: scale(0.95);
+}
+
+.like-count {
+  display: inline-block;
+  margin-left: 1rem;
+  color: #555;
+  font-size: 1rem;
+}
+
 </style>

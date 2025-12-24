@@ -1,5 +1,6 @@
 // src/views/ArticleDetail.js
-import axios from 'axios';
+import { useArticleStore } from "@/stores/article";
+import {computed, onMounted} from "vue";
 
 export default {
     name: 'ArticleDetail',
@@ -9,51 +10,33 @@ export default {
             required: true
         }
     },
-    data() {
-        return {
-            article: {
-                id: '',
-                title: '',
-                date: '',
-                category: '',
-                content: ''
-            },
-            loading: false,
-            error: ''
-        }
-    },
-    mounted() {
-        this.fetchArticle()
-    },
-    methods: {
-        async fetchArticle() {
-            this.loading = true;
-            this.error = '';
 
-            try {
-                const response = await axios.get(`http://localhost:8080/api/articles/${this.id}`);
-                const articleData = response.data;
+    setup(props) {
+        const store = useArticleStore();
 
-                this.article = {
-                    id: articleData.id,
-                    title: articleData.title,
-                    date: articleData.date || new Date(articleData.publishDate || new Date()).toLocaleDateString('zh-CN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    }),
-                    category: articleData.category,
-                    content: this.formatContent(articleData.content)
-                };
-            } catch (error) {
-                console.error('获取文章详情失败:', error);
-                this.error = '获取文章详情失败，请稍后重试';
-            } finally {
-                this.loading = false;
+        const article = computed(() =>
+            store.getById(Number(props.id)))
+
+        const loading = computed(() => store.loading)
+        const error = computed(() => store.error)
+
+        onMounted(async () => {
+            if (!article.value) {
+                await store.fetchArticleById(Number(props.id))
             }
-        },
-        formatContent(content) {
-            return content;
+        })
+
+        const toggleLike = async () => {
+            if (article.value) {
+                await store.toggleLike(article.value)
+            }
+        }
+
+        return {
+            article,
+            loading,
+            error,
+            toggleLike
         }
     }
 };
