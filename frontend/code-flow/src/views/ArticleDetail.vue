@@ -1,28 +1,55 @@
 <template>
-  <div class="article-detail">
+  <div class="article-detail" v-if="article">
     <div class="article-header">
       <h1>{{ article.title }}</h1>
       <div class="article-meta">
         <span class="date">发布于：{{ article.date }}</span>
         <span class="category">分类：{{ article.category }}</span>
-        <span class="author">作者：{{ article.author }}</span>
+        <span class="author">作者：{{ authorName }}</span>
       </div>
     </div>
-    
+
     <div class="article-content">
       <div v-html="article.content"></div>
     </div>
 
-    <div class = "like-section">
+    <div class="like-section">
       <button class="like-btn" @click="toggleLike">
         <span v-if="liked">❤️ liked</span>
         <span v-else>🤍 like</span>
       </button>
       <span class="like-count">like: {{ article.likes }}</span>
     </div>
+
+    <!-- comment  -->
+    <div class="comment-section">
+      <div v-if="replyingTo" class="replying-tip">
+        replying to {{ replyingTo.author }}
+        <span @click="replyingTo = null" style="cursor:pointer">cancel</span>
+      </div>
+
+      <textarea
+        v-model="newComment"
+        placeholder="write you comment...">
+      </textarea>
+      <button @click="submitComment">publish comment</button>
+    </div>
+
+    <!-- comment list  -->
+    <template v-for="c in comments" :key="c.id">
+      <CommentItem
+          :comment="c"
+          :getCommentAuthorName="getCommentAuthorName"
+          @reply="onReply"
+      />
+    </template>
+
     <div class="article-actions">
       <router-link to="/articles" class="btn-back">返回列表</router-link>
     </div>
+  </div>
+  <div v-else>
+    Loading...
   </div>
 </template>
 
@@ -133,5 +160,22 @@ export default ArticleDetailLogic
   color: #555;
   font-size: 1rem;
 }
+
+.comment-section {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.comment-section button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 
 </style>
