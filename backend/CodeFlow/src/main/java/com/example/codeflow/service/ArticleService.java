@@ -14,4 +14,6 @@ public interface ArticleService {
     ArticleDTO createArticle(ArticleDTO articleDTO);
 
     ArticleDTO updateArticle(Long id, ArticleDTO updatedArticle);
+
+    List<ArticleDTO> getTop10Articles();
 }

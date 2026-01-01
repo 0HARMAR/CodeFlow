@@ -22,34 +22,32 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'HomePage',
   data() {
     return {
-      featuredArticles: [
-        {
-          id: 1,
-          title: 'Vue 3 新特性详解',
-          excerpt: '探索 Vue 3 带来的 Composition API、Teleport、Fragments 等新特性...',
-          date: '2023-10-15'
-        },
-        {
-          id: 2,
-          title: '前端性能优化实战',
-          excerpt: '如何通过懒加载、缓存策略和代码分割提升你的应用性能...',
-          date: '2023-10-10'
-        },
-        {
-          id: 3,
-          title: '现代 CSS 技巧大全',
-          excerpt: '掌握 Grid、Flexbox、CSS 变量等现代 CSS 技术，让你的布局更灵活...',
-          date: '2023-10-05'
-        }
-      ]
+      featuredArticles: []  // 初始为空，等待后端数据
+    }
+  },
+  mounted() {
+    this.loadTopArticles()
+  },
+  methods: {
+    async loadTopArticles() {
+      try {
+        const res = await axios.get('http://localhost:8080/api/articles/top/top10')
+
+        this.featuredArticles = res.data
+      } catch (error) {
+        console.error('加载文章失败:', error)
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .home {

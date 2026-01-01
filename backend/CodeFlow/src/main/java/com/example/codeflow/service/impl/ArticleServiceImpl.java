@@ -1,5 +1,8 @@
 package com.example.codeflow.service.impl;
 
+import com.example.codeflow.domain.ArticleMetricsCalculator;
+import com.example.codeflow.domain.ArticleScoreCalculator;
+import com.example.codeflow.domain.entity.ArticleMetrics;
 import com.example.codeflow.dto.ArticleDTO;
 import com.example.codeflow.model.Article;
 import com.example.codeflow.model.User;
@@ -10,16 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.example.codeflow.domain.ArticleScoreCalculator.calculateScore;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
     
     @Autowired
     private ArticleRepository articleRepository;
+
+    @Autowired
+    private ArticleMetricsCalculator calculator;
     
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
@@ -116,6 +122,30 @@ public class ArticleServiceImpl implements ArticleService {
 
         return convertToDTO(existing);
     }
+
+    @Override
+    public List<ArticleDTO> getTop10Articles() {
+        List<Article> articles = articleRepository.findAll();
+
+        // 按推荐分数排序，返回前 10
+        List<Article> articlesSorted =  articles.stream()
+                .sorted((a, b) -> {
+                    double scoreA = calculateScore(calculator.calculate(a));
+                    double scoreB = calculateScore(calculator.calculate(b));
+                    // 降序排序
+                    return Double.compare(scoreB, scoreA);
+                })
+                .limit(10)
+                .toList();
+
+        List<ArticleDTO> articleDTOs = new ArrayList<>();
+        for (Article article : articlesSorted) {
+            articleDTOs.add(convertToDTO(article));
+        }
+
+        return articleDTOs;
+    }
+
 
     // 将Article实体转换为ArticleDTO
     private ArticleDTO convertToDTO(Article article) {

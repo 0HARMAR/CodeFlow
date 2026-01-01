@@ -62,4 +62,10 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/top/top10")
+    public ResponseEntity<List<ArticleDTO>> getTop10Articles() {
+        List<ArticleDTO> articles = articleService.getTop10Articles();
+        return ResponseEntity.ok(articles);
+    }
 }
