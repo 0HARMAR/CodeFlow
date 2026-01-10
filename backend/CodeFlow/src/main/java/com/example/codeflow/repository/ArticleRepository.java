@@ -12,4 +12,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByCategory(String category);
     List<Article> findByPublishDateBetween(Date startDate, Date endDate);
     List<Article> findAllByOrderByPublishDateDesc();
+    // 根据用户ID查询该用户的所有文章
+    List<Article> findByOwnerId(String userId);
+
 }

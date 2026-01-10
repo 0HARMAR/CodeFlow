@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from "@/stores/auth";
 
 export default {
   name: 'BaseLoginForm',
@@ -17,8 +18,11 @@ export default {
       loading: false
     }
   },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
   methods: {
-    
     // 处理登录
     async handleLogin() {
       // 表单验证
@@ -48,6 +52,8 @@ export default {
         });
         
         console.log('登录成功:', response.data);
+
+        this.authStore.setToken(response.data.token);
         
         // 存储登录状态
         const userData = {

@@ -124,14 +124,14 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<ArticleDTO> getTop10Articles() {
+    public List<ArticleDTO> getTop10Articles(Long userId) {
         List<Article> articles = articleRepository.findAll();
 
         // 按推荐分数排序，返回前 10
         List<Article> articlesSorted =  articles.stream()
                 .sorted((a, b) -> {
-                    double scoreA = calculateScore(calculator.calculate(a));
-                    double scoreB = calculateScore(calculator.calculate(b));
+                    double scoreA = calculateScore(calculator.calculate(a), userId);
+                    double scoreB = calculateScore(calculator.calculate(b), userId);
                     // 降序排序
                     return Double.compare(scoreB, scoreA);
                 })
@@ -144,6 +144,15 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         return articleDTOs;
+    }
+
+    @Override
+    public List<ArticleDTO> getArticlesByUserId(Long userId) {
+        List<Article> articles = articleRepository.findByOwnerId(String.valueOf(userId));
+
+        return articles.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
 

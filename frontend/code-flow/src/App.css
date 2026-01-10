@@ -28,7 +28,7 @@ body {
 
 /* 导航栏样式 */
 .navbar {
-  background-color: #ffffff;
+  background: var(--gradient-primary-navbar);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -50,13 +50,9 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-left: -1rem; /* 向左移动 1rem */
 }
 
-.logo-image {
-  height: 2rem;
-  width: auto;
-  display: block;
-}
 
 .nav-links {
   display: flex;
@@ -90,12 +86,13 @@ body {
 }
 
 .create-article-btn {
-  background-color: #48bb78;
+  background-color: #68d391; /* 比原来更亮一些 */
 }
 
 .create-article-btn:hover {
-  background-color: #38a169;
+  background-color: #4fd1c6; /* 悬停时稍微深一点，但更清新 */
 }
+
 
 /* 用户菜单样式 */
 .user-menu-container {
@@ -197,7 +194,7 @@ body {
 
 /* 页脚样式 */
 .footer {
-  background-color: #333;
+  background-color: #A7CEBC;
   color: white;
   padding: 2rem 0;
   margin-top: auto;

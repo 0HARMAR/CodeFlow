@@ -6,6 +6,7 @@ import com.example.codeflow.dto.RegisterRequest;
 import com.example.codeflow.model.User;
 import com.example.codeflow.repository.UserRepository;
 import com.example.codeflow.service.UserService;
+import com.example.codeflow.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
     
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -30,6 +34,8 @@ public class UserServiceImpl implements UserService {
         if (user == null || !user.getPassword().equals(loginRequest.getPassword())) {
             throw new RuntimeException("Invalid username/email or password");
         }
+
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
         
         // 创建登录响应
         LoginResponse response = new LoginResponse();
@@ -39,7 +45,8 @@ public class UserServiceImpl implements UserService {
         response.setAvatar(user.getAvatar());
         response.setLoggedIn(true);
         response.setRemember(loginRequest.isRemember());
-        
+
+        response.setToken(token);
         return response;
     }
     
@@ -88,6 +95,8 @@ public class UserServiceImpl implements UserService {
         
         // 保存用户到数据库
         user = userRepository.save(user);
+
+        String token =  jwtUtil.generateToken(user.getId(), user.getUsername());
         
         // 创建注册响应
         LoginResponse response = new LoginResponse();
@@ -97,7 +106,8 @@ public class UserServiceImpl implements UserService {
         response.setAvatar(user.getAvatar());
         response.setLoggedIn(true);
         response.setRemember(false);
-        
+
+        response.setToken(token);
         return response;
     }
 

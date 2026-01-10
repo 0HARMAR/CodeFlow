@@ -15,5 +15,7 @@ public interface ArticleService {
 
     ArticleDTO updateArticle(Long id, ArticleDTO updatedArticle);
 
-    List<ArticleDTO> getTop10Articles();
+    List<ArticleDTO> getTop10Articles(Long userId);
+
+    List<ArticleDTO> getArticlesByUserId(Long userId);
 }

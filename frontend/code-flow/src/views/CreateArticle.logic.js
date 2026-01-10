@@ -33,10 +33,6 @@ export default {
         }
     },
 
-    beforeUnmount() {
-        if (this.$router.push('/login'));
-    },
-
     methods: {
         async handleSubmit() {
             this.submitting = true

@@ -7,6 +7,7 @@ public class LoginResponse {
     private String avatar;
     private boolean loggedIn;
     private boolean remember;
+    private String token;
     
     // Getters and Setters
     public Long getId() {
@@ -55,5 +56,13 @@ public class LoginResponse {
     
     public void setRemember(boolean remember) {
         this.remember = remember;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

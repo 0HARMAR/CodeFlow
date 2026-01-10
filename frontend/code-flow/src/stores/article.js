@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import axios from "axios";
+import axios from "@/utils/axios";
 
 export const useArticleStore = defineStore('article', {
     state: () => ({
@@ -29,6 +29,24 @@ export const useArticleStore = defineStore('article', {
 
             this.articles.push(article)
             return article
+        },
+
+        async findArticlesByOwnerId(ownerId) {
+            const res = await axios.get(`http://localhost:8080/api/articles/user/${ownerId}`)
+            return res.data.map(a => {
+                return {
+                    id: a.id,
+                    title: a.title,
+                    excerpt: a.excerpt,
+                    content: a.content,
+                    date: a.date,
+                    category: a.category,
+                    createAt: a.createAt,
+                    updateAt: a.updateAt,
+                    likes: a.likes || 0,
+                    authorId: a.authorId,
+                }
+            })
         },
 
         async toggleLike(article) {

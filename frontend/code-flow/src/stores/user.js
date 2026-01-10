@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import axios from '@/utils/axios'
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', {
         // 根据 id 查用户
         async findUserById(id) {
             console.log('🧠 findUserById called with:', id)
-            const res = await axios.get(`http://localhost:8080/api/users/3`)
+            const res = await axios.get(`http://localhost:8080/api/users/${id}`)
             console.log('🧠 user api result:', res.data)
             return res.data
         },

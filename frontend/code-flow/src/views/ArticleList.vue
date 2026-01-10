@@ -22,7 +22,7 @@
 <script setup>
 import { reactive, onMounted } from "vue";
 import { useArticleStore } from "../stores/article";
-import axios from "axios";
+import axios from "@/utils/axios";
 
 const store = useArticleStore()
 

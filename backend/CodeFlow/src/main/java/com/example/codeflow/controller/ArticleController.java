@@ -64,8 +64,18 @@ public class ArticleController {
     }
 
     @GetMapping("/top/top10")
-    public ResponseEntity<List<ArticleDTO>> getTop10Articles() {
-        List<ArticleDTO> articles = articleService.getTop10Articles();
+    public ResponseEntity<List<ArticleDTO>> getTop10Articles(@RequestParam Long userId) {
+        List<ArticleDTO> articles = articleService.getTop10Articles(userId);
         return ResponseEntity.ok(articles);
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ArticleDTO>> getArticlesByUserId(@PathVariable Long userId) {
+        List<ArticleDTO> articles = articleService.getArticlesByUserId(userId);
+        if (articles == null || articles.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(articles);
+    }
+
 }

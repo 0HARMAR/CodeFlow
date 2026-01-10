@@ -10,10 +10,24 @@ public class ArticleScoreCalculator {
     private static final double COMMENT_WEIGHT = 3.0;
     private static final double FRESHNESS_WEIGHT = 1.0;
 
-    public static double calculateScore(ArticleMetrics metrics) {
-        return LENGTH_WEIGHT * metrics.getLengthScore()
-                + LIKE_WEIGHT * metrics.getLikeScore()
-                + COMMENT_WEIGHT * metrics.getCommentScore()
-                + FRESHNESS_WEIGHT * metrics.getFreshnessScore();
+    public static double calculateScore(ArticleMetrics metrics, Long userId) {
+
+        ExperimentGroup group = ExperimentRouter.route(userId);
+        ScoreWeight w = ScoreWeightFactory.getWeight(group);
+
+        double score =
+                w.length * metrics.getLengthScore()
+                + w.like * metrics.getLikeScore()
+                + w.comment * metrics.getCommentScore()
+                + w.freshness * metrics.getFreshnessScore();
+
+        // A/B test log
+        System.out.println(
+                "AB_TEST score user=" + userId +
+                        " group=" + group +
+                        " score=" + score
+        );
+
+        return score;
     }
 }

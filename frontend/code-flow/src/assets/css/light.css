@@ -1,0 +1,23 @@
+:root {
+    --gradient-primary: linear-gradient(
+            135deg,
+            #FFD54F 0%,
+            #FFB300 100%
+    );
+
+    --gradient-primary-navbar: linear-gradient(
+            135deg,
+            #FFD54F 0%,
+            #FFB300 100%
+    );
+}
+
+html:not(.dark) .avatar-wrapper.nijika {
+    display: block;
+}
+
+html:not(.dark) .avatar-wrapper.nazuna {
+    display: none;
+}
+
+

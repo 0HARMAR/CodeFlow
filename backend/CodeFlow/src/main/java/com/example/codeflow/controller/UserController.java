@@ -1,12 +1,13 @@
 package com.example.codeflow.controller;
 
-import com.example.codeflow.dto.DeleteAccountRequest;
 import com.example.codeflow.dto.LoginRequest;
 import com.example.codeflow.dto.LoginResponse;
 import com.example.codeflow.dto.RegisterRequest;
+import com.example.codeflow.security.SecurityUtil;
 import com.example.codeflow.service.FileStorageService;
 import com.example.codeflow.service.UserService;
 import com.example.codeflow.model.User;
+import com.example.codeflow.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,9 @@ public class UserController {
     
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
     
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -67,45 +71,71 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        try {
-            logger.info("收到获取用户信息请求，用户ID: {}", id);
-            User user = userService.findById(id);
-            if (user != null) {
-                // 创建响应对象，不包含敏感信息
-                Map<String, Object> response = new HashMap<>();
-                response.put("id", user.getId());
-                response.put("username", user.getUsername());
-                response.put("email", user.getEmail());
-                response.put("avatar", user.getAvatar());
-                return ResponseEntity.ok(response);
-            } else {
-                logger.warn("用户ID: {} 不存在", id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("用户不存在");
-            }
-        } catch (Exception e) {
-            logger.error("获取用户ID: {} 信息时发生错误", id, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("获取用户信息失败");
+    public ResponseEntity<?> getUserById(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authorization) {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("未登录");
         }
+
+        String token = authorization.substring(7);
+        Long tokenUserId = jwtUtil.getUserIdFromToken(token);
+
+        if (!tokenUserId.equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("无权访问");
+        }
+
+        User user = userService.findById(id);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("用户不存在");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", user.getId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("avatar", user.getAvatar());
+
+        return ResponseEntity.ok(response);
     }
-    
+
+
     @PostMapping("/delete-account")
-    public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccountRequest request) {
-        try {
-            logger.info("收到删除账号请求，用户ID: {}", request.getUserId());
-            boolean deleted = userService.deleteUser(request.getUserId());
-            if (deleted) {
-                logger.info("用户ID: {} 删除成功", request.getUserId());
-                return ResponseEntity.ok("账号已成功删除");
-            } else {
-                logger.warn("用户ID: {} 不存在", request.getUserId());
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("用户不存在");
-            }
-        } catch (Exception e) {
-            logger.error("删除用户ID: {} 时发生错误", request.getUserId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("删除账号失败");
+    public ResponseEntity<?> deleteAccount(
+            @RequestHeader("Authorization") String authorization) {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("未登录");
+        }
+
+        String token = authorization.substring(7);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        boolean deleted = userService.deleteUser(userId);
+        if (deleted) {
+            return ResponseEntity.ok("账号已成功删除");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("用户不存在");
         }
     }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        User user = userService.findById(userId);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("id", user.getId());
+        resp.put("username", user.getUsername());
+        resp.put("email", user.getEmail());
+        resp.put("avatar", user.getAvatar());
+
+        return ResponseEntity.ok(resp);
+    }
+
+
 }

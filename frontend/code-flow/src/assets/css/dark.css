@@ -1,0 +1,27 @@
+.dark .hero-section{
+    --gradient-primary: linear-gradient(
+            135deg,
+            #D3A2E1 0%,    /* 主色 */
+            #A48ACB 50%,   /* 稍深一点 */
+            #7A6FA3 100%   /* 更深一点的尾色 */
+    );
+}
+
+.dark .navbar {
+    --gradient-primary-navbar: linear-gradient(
+            135deg,
+            #D3A2E1 0%,    /* 主色 */
+            #A48ACB 50%,   /* 稍深一点 */
+            #7A6FA3 100%   /* 更深一点的尾色 */
+    );
+}
+
+/* 夜间：nazuna 出场 */
+html.dark .avatar-wrapper.nazuna {
+    display: block;
+}
+
+html.dark .avatar-wrapper.nijika {
+    display: none;
+}
+

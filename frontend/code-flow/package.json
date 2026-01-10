@@ -12,6 +12,7 @@
     "@tiptap/vue-3": "^3.11.0",
     "axios": "^1.13.2",
     "core-js": "^3.8.3",
+    "cors": "^2.8.5",
     "pinia": "^3.0.4",
     "vue": "^3.2.13",
     "vue-router": "^4.6.3"
@@ -28,14 +29,20 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "browser": true,
+      "node": true,
+      "es2021": true
     },
     "extends": [
       "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
+    "parser": "vue-eslint-parser",
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@babel/eslint-parser",
+      "ecmaVersion": 2021,
+      "sourceType": "module",
+      "requireConfigFile": false
     },
     "rules": {}
   },

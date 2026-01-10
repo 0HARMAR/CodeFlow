@@ -4,25 +4,35 @@
     <nav class="navbar">
       <div class="container">
         <router-link to="/" class="logo">
-          <img src="@/assets/codeflow.png" alt="CodeFlow Logo" class="logo-image">
           <span>CodeFlow</span>
         </router-link>
         <div class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/articles" class="nav-link">文章</router-link>
           <router-link v-if="user" to="/create-article" class="nav-link create-article-btn">写文章</router-link>
+          <!-- 黑夜模式按钮 -->
+          <button class="dark-toggle-btn" @click="toggleDarkMode">
+            {{ isDark ? '☀️ 日间' : '🌙 夜间' }}
+          </button>
+
           <router-link to="/about" class="nav-link">关于</router-link>
           
           <!-- 登录状态显示 -->
           <div v-if="user" class="user-menu-container">
             <div class="user-menu-trigger" @click="toggleUserMenu">
-              <img :src="user.avatar" alt="用户头像" class="user-avatar">
+              <img alt="用户头像" id = "avatar" class="user-avatar">
               <span class="user-name">{{ user.username }}</span>
               <span class="menu-arrow" :class="{ 'rotate': showUserMenu }">▼</span>
             </div>
             <!-- 用户下拉菜单 -->
             <div v-if="showUserMenu" class="user-dropdown-menu">
-              <a href="#" class="menu-item">个人中心</a>
+              <router-link
+                  to="/user-center"
+                  class="menu-item"
+                  @click="showUserMenu = false"
+              >
+                个人中心
+              </router-link>
               <a href="#" class="menu-item">我的文章</a>
               <a href="#" class="menu-item">设置</a>
               <div class="menu-divider"></div>
@@ -52,15 +62,21 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '@/utils/axios';
+import {useAuthStore} from "@/stores/auth";
 export default {
   name: 'App',
   data() {
     return {
       user: null,
       showUserMenu: false,
-      routeChangeHandler: null
+      routeChangeHandler: null,
+      isDark: false
     }
+  },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
   },
   mounted() {
     // 检查用户登录状态
@@ -69,6 +85,12 @@ export default {
     document.addEventListener('click', this.handleDocumentClick);
     // 监听路由变化，确保登录后立即更新用户信息
     this.routeChangeHandler = this.$router.afterEach(this.handleRouteChange);
+
+    // 读取黑夜模式
+    const dark = localStorage.getItem('dark-mode');
+    if (dark === 'true') {
+      this.enableDarkMode();
+    }
   },
   beforeUnmount() {
     // 移除事件监听器
@@ -79,6 +101,21 @@ export default {
     }
   },
   methods: {
+    toggleDarkMode() {
+      this.isDark ? this.disableDarkMode() : this.enableDarkMode();
+    },
+
+    enableDarkMode() {
+      this.isDark = true;
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('dark-mode', 'true');
+    },
+
+    disableDarkMode() {
+      this.isDark = false;
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('dark-mode', 'false');
+    },
     // 检查用户登录状态
     checkUserLoginStatus() {
       const userData = localStorage.getItem('user');
@@ -95,7 +132,17 @@ export default {
                   user.avatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&s=150';
                 } else if (!user.avatar.startsWith('http')) {
                   // 如果头像URL不是完整的http地址，添加服务器地址前缀
-                  user.avatar = `http://localhost:8080${user.avatar}`;
+                  const token = this.authStore.token;
+                  fetch(`http://localhost:8080${user.avatar}`, {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  })
+                      .then(res => res.blob())
+                      .then(blob => {
+                        const imgUrl = URL.createObjectURL(blob)
+                        document.getElementById('avatar').src = imgUrl;
+                      })
                 }
                 // 合并本地和远程的用户信息
                 user.loggedIn = true;
