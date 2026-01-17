@@ -25,8 +25,7 @@ export default {
         const author = ref(null)
         const commentAuthors = ref({})
 
-        const article = computed(() =>
-            store.getById(Number(props.id)))
+        const article = ref(null)
 
         watch(
             () => article.value?.authorId,
@@ -59,12 +58,16 @@ export default {
         const error = computed(() => store.error)
 
         onMounted(async () => {
-            if (!article.value) {
-                await store.fetchArticleById(Number(props.id))
+            article.value = await store.fetchArticleById(Number(props.id))
+
+            if (article.value?.id) {
+                await commentStore.fetchComments(article.value.id)
+                comments.value = commentStore.comments
             }
 
-            await commentStore.fetchComments(article.value.id)
-            comments.value = commentStore.comments
+            if (article.value?.authorId) {
+                author.value = await userStore.findUserById(article.value.authorId)
+            }
         })
 
         const authorName = computed(() => {

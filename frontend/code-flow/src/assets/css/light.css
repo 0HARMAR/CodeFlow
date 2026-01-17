@@ -10,6 +10,11 @@
             #FFD54F 0%,
             #FFB300 100%
     );
+    --foot-color: #A7CEBC;
+
+    --card-color: #FFF8E1;
+
+    --card-color-h3: #6D4C41;
 }
 
 html:not(.dark) .avatar-wrapper.nijika {

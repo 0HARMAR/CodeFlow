@@ -24,7 +24,29 @@
           <option value="工作">工作</option>
         </select>
       </div>
-      
+
+      <div class="form-group">
+        <label for="tags">文章标签</label>
+        <div class="tags-input">
+          <ul class="tags-list">
+            <li v-for="(tag, index) in tags" :key="index">
+              {{ tag }}
+              <span class="remove-tag" @click="removeTag(index)">×</span>
+            </li>
+          </ul>
+          <input
+              type="text"
+              v-model="tagInput"
+              placeholder="输入标签后按回车或逗号添加"
+              @keydown.enter.prevent="addTag"
+              @keydown="checkComma"
+              @blur="addTag"
+          />
+
+        </div>
+      </div>
+
+
       <div class="form-group">
         <label for="content">文章内容</label>
         <div class="editor-toolbar">
@@ -44,6 +66,11 @@
 
           <button @click="editor.chain().focus().undo().run()">↶ 撤销</button>
           <button @click="editor.chain().focus().redo().run()">↷ 重做</button>
+
+          <!-- ⭐ AI 续写 -->
+          <button @click="handleAiContinue" :disabled="aiLoading">
+            🤖 {{ aiLoading ? '生成中...' : 'AI 续写' }}
+          </button>
         </div>
 
         <div class="editor-block">
@@ -214,4 +241,47 @@ export default {
 .editor-toolbar button:hover {
   background: #e6e6e6;
 }
+
+.tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border: 1px solid #ddd;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.tags-input input {
+  border: none;
+  flex: 1;
+  min-width: 120px;
+  padding: 4px 6px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tags-list li {
+  background: #667eea;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.remove-tag {
+  margin-left: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
 </style>

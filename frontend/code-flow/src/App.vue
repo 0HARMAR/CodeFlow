@@ -9,6 +9,8 @@
         <div class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/articles" class="nav-link">文章</router-link>
+          <!-- 搜索栏 -->
+          <SearchBar />
           <router-link v-if="user" to="/create-article" class="nav-link create-article-btn">写文章</router-link>
           <!-- 黑夜模式按钮 -->
           <button class="dark-toggle-btn" @click="toggleDarkMode">
@@ -64,8 +66,10 @@
 <script>
 import axios from '@/utils/axios';
 import {useAuthStore} from "@/stores/auth";
+import SearchBar from "@/views/SearchBar.vue";
 export default {
   name: 'App',
+  components: {SearchBar},
   data() {
     return {
       user: null,

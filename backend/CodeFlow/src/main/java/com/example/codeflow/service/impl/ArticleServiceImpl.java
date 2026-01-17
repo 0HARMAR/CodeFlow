@@ -5,9 +5,12 @@ import com.example.codeflow.domain.ArticleScoreCalculator;
 import com.example.codeflow.domain.entity.ArticleMetrics;
 import com.example.codeflow.dto.ArticleDTO;
 import com.example.codeflow.model.Article;
+import com.example.codeflow.model.ArticleTag;
 import com.example.codeflow.model.User;
 import com.example.codeflow.repository.ArticleRepository;
+import com.example.codeflow.repository.ArticleTagRepository;
 import com.example.codeflow.service.ArticleService;
+import com.example.codeflow.service.RedisService;
 import com.example.codeflow.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,9 +26,15 @@ public class ArticleServiceImpl implements ArticleService {
     
     @Autowired
     private ArticleRepository articleRepository;
+    
+    @Autowired
+    private ArticleTagRepository articleTagRepository;
 
     @Autowired
     private ArticleMetricsCalculator calculator;
+
+    @Autowired
+    private RedisService redisService;
     
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
@@ -35,6 +44,8 @@ public class ArticleServiceImpl implements ArticleService {
         List<ArticleDTO> articleDTOs = new ArrayList<>();
         
         for (Article article : articles) {
+            String views = redisService.getValue("article:" + article.getId());
+            article.setViews((views == null) ? 0 : Integer.parseInt(views));
             articleDTOs.add(convertToDTO(article));
         }
         
@@ -43,19 +54,32 @@ public class ArticleServiceImpl implements ArticleService {
     
     @Override
     public ArticleDTO getArticleById(Long id) {
+        // increase views
+        String value = redisService.getValue("article:" + id);
+        if (value != null) {
+            redisService.setValue("article:" + id,
+                    String.valueOf(Integer.parseInt(value) + 1), 86400);
+        } else {
+            redisService.setValue("article:" + id, "1", 86400);
+        }
+
         Article article = articleRepository.findById(id).orElse(null);
+        String views = redisService.getValue("article:" + id);
+        article.setViews((views == null) ? 0 : Integer.parseInt(views));
         if (article == null) {
             return null;
         }
         return convertToDTO(article);
     }
-    
+
     @Override
     public List<ArticleDTO> getArticlesByCategory(String category) {
         List<Article> articles = articleRepository.findByCategory(category);
         List<ArticleDTO> articleDTOs = new ArrayList<>();
         
         for (Article article : articles) {
+            String views = redisService.getValue("article:" + article.getId());
+            article.setViews((views == null) ? 0 : Integer.parseInt(views));
             articleDTOs.add(convertToDTO(article));
         }
         
@@ -116,6 +140,7 @@ public class ArticleServiceImpl implements ArticleService {
         existing.setCreatedAt(updatedArticle.getCreatedAt());
         existing.setLikes(updatedArticle.getLikes());
         existing.setOwnerId(updatedArticle.getAuthorId());
+        existing.setViews(updatedArticle.getViews());
 
         // save to database
         Article savedArticle = articleRepository.save(existing);
@@ -140,6 +165,8 @@ public class ArticleServiceImpl implements ArticleService {
 
         List<ArticleDTO> articleDTOs = new ArrayList<>();
         for (Article article : articlesSorted) {
+            String views = redisService.getValue("article:" + article.getId());
+            article.setViews((views == null) ? 0 : Integer.parseInt(views));
             articleDTOs.add(convertToDTO(article));
         }
 
@@ -149,10 +176,23 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public List<ArticleDTO> getArticlesByUserId(Long userId) {
         List<Article> articles = articleRepository.findByOwnerId(String.valueOf(userId));
+        List<ArticleDTO> articleDTOs = new ArrayList<>();
 
-        return articles.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        for (Article article : articles) {
+            String views = redisService.getValue("article:" + article.getId());
+            article.setViews((views == null) ? 0 : Integer.parseInt(views));
+            articleDTOs.add(convertToDTO(article));
+        }
+
+        return articleDTOs;
+    }
+
+    @Override
+    public void relateTags(Long articleId, List<Long> tagIds) {
+        for (Long tagId : tagIds) {
+            ArticleTag articleTag = new ArticleTag(articleId, tagId);
+            articleTagRepository.save(articleTag);
+        }
     }
 
 
@@ -175,6 +215,8 @@ public class ArticleServiceImpl implements ArticleService {
 
         dto.setCreatedAt(article.getCreatedAt());
         dto.setUpdatedAt(article.getUpdatedAt());
+
+        dto.setViews(article.getViews());
 
         return dto;
     }

@@ -18,4 +18,6 @@ public interface ArticleService {
     List<ArticleDTO> getTop10Articles(Long userId);
 
     List<ArticleDTO> getArticlesByUserId(Long userId);
+
+    void relateTags(Long articleId, List<Long> tagIds);
 }

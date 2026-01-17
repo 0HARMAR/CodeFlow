@@ -4,6 +4,9 @@
 
     <div class="articles">
       <div class="article-item" v-for="article in store.articles" :key="article.id">
+        <div class="views">
+          👁 {{ article.views }}
+        </div>
         <router-link :to="`/article/${article.id}`">
           <h2>{{ article.title }}</h2>
           <p class="excerpt">{{ article.excerpt }}</p>
@@ -69,11 +72,23 @@ const loadAuthor = async (id) => {
 }
 
 .article-item {
+  position: relative;
   background: white;
   border-radius: 8px;
   padding: 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.views {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.85rem;
+  color: #555;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
 }
 
 .article-item:hover {

@@ -2,6 +2,8 @@ package com.example.codeflow.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "articles")
@@ -37,6 +39,9 @@ public class Article {
     @Column(nullable = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private String ownerId;
+
+    @Column(name = "views")
+    private Integer views = 0;
 
     // Getters and Setters
     public Long getId() {
@@ -117,5 +122,13 @@ public class Article {
 
     public String getOwnerId() {
         return this.ownerId;
+    }
+
+    public Integer getViews() {
+        return views;
+    }
+
+    public void setViews(Integer views) {
+        this.views = views;
     }
 }

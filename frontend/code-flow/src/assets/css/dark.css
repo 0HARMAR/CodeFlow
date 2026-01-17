@@ -16,6 +16,18 @@
     );
 }
 
+.dark .footer {
+    --foot-color: #F8ACB1
+}
+
+.dark .article-cards {
+    --card-color: #3D3B46
+}
+
+.dark .article-cards h3 {
+    --card-color-h3: #FDE6D8;
+}
+
 /* 夜间：nazuna 出场 */
 html.dark .avatar-wrapper.nazuna {
     display: block;

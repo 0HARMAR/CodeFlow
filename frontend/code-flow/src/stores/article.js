@@ -8,9 +8,6 @@ export const useArticleStore = defineStore('article', {
 
     actions: {
         async fetchArticleById(id) {
-            const existing = this.getById(id)
-            if (existing) return existing
-
             const res = await axios.get(`http://localhost:8080/api/articles/${id}`)
             const a = res.data
 
@@ -25,6 +22,7 @@ export const useArticleStore = defineStore('article', {
                 updateAt: a.updateAt,
                 likes: a.likes || 0,
                 authorId: a.authorId,
+                views: a.views || 0,
             }
 
             this.articles.push(article)
@@ -45,6 +43,7 @@ export const useArticleStore = defineStore('article', {
                     updateAt: a.updateAt,
                     likes: a.likes || 0,
                     authorId: a.authorId,
+                    views: a.views || 0,
                 }
             })
         },
@@ -83,6 +82,7 @@ export const useArticleStore = defineStore('article', {
                             updateAt: a.updateAt,
                             likes: a.likes || 0,
                             authorId: a.authorId,
+                            views: a.views || 0,
                         }
                     })
                 )
@@ -96,7 +96,7 @@ export const useArticleStore = defineStore('article', {
             }
         },
 
-        async createArticle(articleForm) {
+        async createArticle(articleForm, tags) {
             this.error = ''
             try {
                 const userData = localStorage.getItem('user');
@@ -122,6 +122,14 @@ export const useArticleStore = defineStore('article', {
                 }
 
                 this.articles.push(newArticle)
+
+                // create tags
+                const tagRes = await axios.post(`http://localhost:8080/api/tags`, tags)
+
+                // relate tags to article
+                const articleId = newArticle.id
+                const tagIds = tagRes.data.map(tag => tag.id)
+                axios.post(`http://localhost:8080/api/articles/tags?articleId=${articleId}`, tagIds)
             } catch (e) {
                 this.error = e.message || 'publish article failed'
                 throw e

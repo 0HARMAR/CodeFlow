@@ -9,6 +9,7 @@ backend/CodeFlow/.mvn
 backend/CodeFlow/mvnw
 backend/CodeFlow/mvnw.cmd
 backend/CodeFlow/HELP.md
+backend/CodeFlow/src/test
 
 frontend/code-flow/node_modules
 frontend/code-flow/public

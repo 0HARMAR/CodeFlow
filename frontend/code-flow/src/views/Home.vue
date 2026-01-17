@@ -272,7 +272,7 @@ export default {
 }
 
 .article-card {
-  background: #FFF8E1; /* 浅黄 */
+  background: var(--card-color);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   padding: 1.5rem;
@@ -294,7 +294,7 @@ export default {
 .article-card h3 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #6D4C41;
+  color: var(--card-color-h3);
 }
 
 .article-card p {
