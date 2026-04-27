@@ -7,17 +7,17 @@
           <span>CodeFlow</span>
         </router-link>
         <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/articles" class="nav-link">文章</router-link>
           <!-- 搜索栏 -->
           <SearchBar />
-          <router-link v-if="user" to="/create-article" class="nav-link create-article-btn">写文章</router-link>
+          <router-link to="/" class="nav-link home-page-btn">首页</router-link>
+          <router-link to="/articles" class="nav-link article-list-btn">文章</router-link>
+          <router-link v-if="user" to="/creation-center" class="nav-link create-article-btn">创作中心</router-link>
           <!-- 黑夜模式按钮 -->
           <button class="dark-toggle-btn" @click="toggleDarkMode">
             {{ isDark ? '☀️ 日间' : '🌙 夜间' }}
           </button>
 
-          <router-link to="/about" class="nav-link">关于</router-link>
+          <router-link to="/about" class="nav-link about">关于</router-link>
           
           <!-- 登录状态显示 -->
           <div v-if="user" class="user-menu-container">

@@ -20,4 +20,6 @@ public interface ArticleService {
     List<ArticleDTO> getArticlesByUserId(Long userId);
 
     void relateTags(Long articleId, List<Long> tagIds);
+
+    List<ArticleDTO> search(String keyword);
 }

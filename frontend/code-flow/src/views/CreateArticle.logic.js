@@ -1,96 +1,123 @@
 // CreateArticle.logic.js
+import { ref, reactive, onMounted, onBeforeUnmount, toRaw } from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import { Editor } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
-import { useArticleStore } from "@/stores/article";
-import {toRaw} from "vue";
+import { useArticleStore } from '@/stores/article'
 
 export default {
     name: 'CreateArticle',
-    data() {
-        return {
-            editor: null,
-            articleForm: {
-                title: '',
-                category: '',
-                content: '',
-            },
-            submitting: false,
-            error: '',
-            aiLoading: false,
-            tagInput: '',
-            tags: []
-        };
-    },
+    setup() {
+        // ===== state =====
+        const editor = ref(null)
 
-    mounted() {
-        this.editor = new Editor({
-            extensions: [StarterKit],
-            content: '<p>now wirte your article</p>',
-            onUpdate: ({ editor }) => {
-                this.articleForm.content = editor.getHTML();
+        const articleForm = reactive({
+            title: '',
+            category: '',
+            content: '',
+        })
+
+        const submitting = ref(false)
+        const error = ref('')
+        const aiLoading = ref(false)
+        const tagInput = ref('')
+        const tags = ref([])
+
+        const router = useRouter()
+        const route = useRoute()
+        const articleStore = useArticleStore()
+        const draftId = Number(route.query.id);
+
+        // ===== lifecycle =====
+        onMounted(async () => {
+            if (draftId !== -1) {
+                let draftData = await articleStore.fetchArticleById(draftId)
+                if (draftData) {
+                    articleForm.title = draftData.title
+                    articleForm.category = draftData.category
+                    articleForm.content = draftData.content
+                }
+            }
+
+            editor.value = new Editor({
+                extensions: [StarterKit],
+                content: articleForm.content ? articleForm.content : '<p>write your content</p>',
+                onUpdate: ({editor}) => {
+                    articleForm.content = editor.getHTML()
+                },
+            })
+
+            const userData = localStorage.getItem('user')
+            if (!userData) {
+                router.push('/login')
             }
         })
 
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            this.$router.push('/login');
-        }
-    },
+        onBeforeUnmount(() => {
+            if (editor.value) {
+                editor.value.destroy()
+            }
+        })
 
-    methods: {
-        checkComma(e) {
+        // ===== methods =====
+        const checkComma = (e) => {
             if (e.key === ',') {
-                e.preventDefault();   // 只阻止逗号
-                this.addTag();
+                e.preventDefault()
+                addTag()
             }
-        },
+        }
 
-        addTag() {
-            const tag = this.tagInput.trim();
-            if (!tag) return;
+        const addTag = () => {
+            const tag = tagInput.value.trim()
+            if (!tag) return
 
-            if (!this.tags.includes(tag)) {
-                this.tags.push(tag);
+            if (!tags.value.includes(tag)) {
+                tags.value.push(tag)
             }
-            this.tagInput = '';
-        },
+            tagInput.value = ''
+        }
 
-        removeTag(index) {
-            this.tags.splice(index, 1);
-        },
+        const removeTag = (index) => {
+            tags.value.splice(index, 1)
+        }
 
-        handleCancel() {
-            // 重置表单
-            this.articleForm = { title: '', category: '', content: '', tags: [] };
-            this.tagInput = '';
-            if (this.editor) this.editor.commands.clearContent();
-        },
-        async handleSubmit() {
-            this.submitting = true
-            this.error = ''
+        const handleCancel = () => {
+            articleForm.title = ''
+            articleForm.category = ''
+            articleForm.content = ''
+            tagInput.value = ''
+
+            if (editor.value) {
+                editor.value.commands.clearContent()
+            }
+        }
+
+        const handleSubmit = async () => {
+            submitting.value = true
+            error.value = ''
 
             const articleStore = useArticleStore()
 
             try {
-                console.log(toRaw(this.tags))
-                await articleStore.createArticle(this.articleForm, toRaw(this.tags))
+                console.log(toRaw(tags.value))
+                await articleStore.createArticle(articleForm, toRaw(tags.value))
                 alert('article publish success')
-                this.$router.push('/articles')
-            } catch(e) {
+                router.push('/articles')
+            } catch (e) {
                 console.error(e)
-                this.error = articleStore.error
+                error.value = articleStore.error
             } finally {
-                this.submitting = false
+                submitting.value = false
             }
-        },
+        }
 
-        async handleAiContinue() {
-            if (!this.editor) return
+        const handleAiContinue = async () => {
+            if (!editor.value) return
 
-            this.aiLoading = true
+            aiLoading.value = true
 
             try {
-                const content = this.editor.getText()
+                const content = editor.value.getText()
 
                 const response = await fetch('http://localhost:3000/chat', {
                     method: 'POST',
@@ -106,8 +133,8 @@ export default {
                             {
                                 role: 'user',
                                 content: `
-文章标题：《${this.articleForm.title}》
-文章分类：${this.articleForm.category}
+文章标题：《${articleForm.title}》
+文章分类：${articleForm.category}
 
 这是我已经写的内容：
 """
@@ -115,7 +142,7 @@ ${content}
 """
 
 请基于以上内容，继续往下写一小段（2~4 句话），保持使用的语言与用户的相同，直接输出正文，不要解释。
-            `.trim(),
+`.trim(),
                             },
                         ],
                     }),
@@ -124,7 +151,7 @@ ${content}
                 const data = await response.json()
 
                 if (data.reply) {
-                    this.editor
+                    editor.value
                         .chain()
                         .focus()
                         .insertContent(data.reply)
@@ -134,9 +161,44 @@ ${content}
                 console.error('AI 续写失败', err)
                 alert('AI 生成失败，请稍后重试')
             } finally {
-                this.aiLoading = false
+                aiLoading.value = false
             }
         }
 
-    }
-};
+        const handleSaveDraft = async () => {
+            submitting.value = true
+            error.value = ''
+
+            const articleStore = useArticleStore()
+
+            try {
+                console.log(toRaw(tags.value))
+                await articleStore.createArticleDraft(articleForm, toRaw(tags.value))
+                alert('article publish success')
+                router.push('/articles')
+            } catch (e) {
+                console.error(e)
+                error.value = articleStore.error
+            } finally {
+                submitting.value = false
+            }
+        }
+
+        return {
+            editor,
+            articleForm,
+            submitting,
+            error,
+            aiLoading,
+            tagInput,
+            tags,
+            checkComma,
+            addTag,
+            removeTag,
+            handleCancel,
+            handleSubmit,
+            handleAiContinue,
+            handleSaveDraft,
+        }
+    },
+}

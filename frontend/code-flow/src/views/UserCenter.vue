@@ -46,8 +46,10 @@
 import {onMounted, reactive, ref} from 'vue'
 import axios from "@/utils/axios";
 import {useArticleStore} from "@/stores/article";
+import {useUserStore} from "@/stores/user";
 
 const articleStore = useArticleStore()
+const UserStore = useUserStore()
 
 const avatarUrl = ref('')  // 存储 blob URL
 const articles = ref([])
@@ -68,6 +70,11 @@ onMounted(async () => {
     const me = await axios.get("http://localhost:8080/api/users/me")
     user.id = me.data.id
     user.username = me.data.username
+    user.password = me.data.password
+    user.bio = me.data.bio
+    user.avatar = me.data.avatar
+    user.email = me.data.email
+
     const avatarPath = me.data.avatar
 
     // 2. 获取头像 Blob
@@ -85,12 +92,14 @@ onMounted(async () => {
   }
 })
 
-function toggleEditBio() {
+async function toggleEditBio() {
   if (editingBio.value) {
     // 保存 bio
     user.bio = newBio.value;
+    await UserStore.updateUser(user)
   } else {
     // 编辑前把当前 bio 赋值给输入框
+    console.log('保存前的 bio:', user.bio);
     newBio.value = user.bio;
   }
   editingBio.value = !editingBio.value;

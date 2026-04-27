@@ -18,6 +18,7 @@ public class ArticleDTO {
     private Date updatedAt;
     private Date createdAt;
     private Integer views;
+    private String status;
 
     // Getters and Setters
     public Long getId() {
@@ -106,5 +107,13 @@ public class ArticleDTO {
 
     public void setViews(Integer views) {
         this.views = views;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -93,6 +93,29 @@ body {
   background-color: #4fd1c6; /* 悬停时稍微深一点，但更清新 */
 }
 
+.article-list-btn {
+  background-color: #68d391;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  color: white;
+}
+
+.article-list-btn:hover {
+  background-color: #4fd1c6;
+}
+
+.home-page-btn {
+  background-color: #68d391;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  color: white;
+}
+
+.home-page-btn:hover {
+  background-color: #4fd1c6;
+}
 
 /* 用户菜单样式 */
 .user-menu-container {
@@ -173,6 +196,29 @@ body {
   height: 1px;
   background-color: #e0e0e0;
   margin: 0.25rem 0;
+}
+
+.dark-toggle-btn {
+  background-color: #68d391;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.dark-toggle-btn:hover {
+  background-color: #4fd1c6;
+}
+
+.about {
+  background-color: #68d391;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: white;
+}
+
+.about:hover {
+  background-color: #4fd1c6;
 }
 
 /* 响应式样式 */

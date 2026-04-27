@@ -131,6 +131,8 @@ public class UserController {
         Map<String, Object> resp = new HashMap<>();
         resp.put("id", user.getId());
         resp.put("username", user.getUsername());
+        resp.put("bio", user.getBio());
+        resp.put("password", user.getPassword());
         resp.put("email", user.getEmail());
         resp.put("avatar", user.getAvatar());
 
@@ -138,4 +140,11 @@ public class UserController {
     }
 
 
+    @PostMapping("/update")
+    public ResponseEntity<User> updateUser(
+            @RequestBody User updateUser
+    ) {
+        User user = userService.updateUser(updateUser);
+        return ResponseEntity.ok(user);
+    }
 }

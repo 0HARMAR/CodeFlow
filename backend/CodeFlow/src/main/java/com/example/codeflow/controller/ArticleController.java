@@ -1,8 +1,10 @@
 package com.example.codeflow.controller;
 
 import com.example.codeflow.dto.ArticleDTO;
+import com.example.codeflow.model.Article;
 import com.example.codeflow.service.ArticleService;
 import com.example.codeflow.service.RedisService;
+import com.example.codeflow.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,6 +85,11 @@ public class ArticleController {
     public ResponseEntity<Void> relateTags(@RequestParam Long articleId, @RequestBody List<Long> tagIds) {
         articleService.relateTags(articleId, tagIds);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ArticleDTO>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(articleService.search(keyword));
     }
 
 }

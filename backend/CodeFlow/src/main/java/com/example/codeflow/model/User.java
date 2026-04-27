@@ -13,7 +13,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
     
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
     
     @Column(nullable = false)
@@ -26,6 +26,10 @@ public class User {
     
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    // user idiograph
+    @Column(name = "bio")
+    private String bio;
     
     // Getters and Setters
     public Long getId() {
@@ -82,5 +86,13 @@ public class User {
     
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }

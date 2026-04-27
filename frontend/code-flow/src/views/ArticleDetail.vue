@@ -1,4 +1,15 @@
 <template>
+  <div v-if="showExplainPopup" class="explain-popup">
+    <div class="explain-header">
+      <span>🤖 AI 解释</span>
+      <span class="close-btn" @click="closeExplain">✖</span>
+    </div>
+    <div class="explain-content">
+      {{ explainText }}
+    </div>
+  </div>
+
+
   <div class="article-detail" v-if="article">
     <div class="article-header">
       <h1>{{ article.title }}</h1>
@@ -6,12 +17,24 @@
         <span class="date">发布于：{{ article.date }}</span>
         <span class="category">分类：{{ article.category }}</span>
         <span class="author">作者：{{ authorName }}</span>
+        <span class="read-time">阅读时间：{{ readTime }}</span>
       </div>
     </div>
 
-    <div class="article-content">
+    <div class="article-content" ref="contentRef">
       <div v-html="article.content"></div>
     </div>
+
+
+    <div
+        v-if="showExplainBtn"
+        class="explain-btn"
+        :style="{ top: btnPosition.top + 'px', left: btnPosition.left + 'px' }"
+        @click="handleExplain"
+    >
+      🤖 解释
+    </div>
+
 
     <div class="like-section">
       <button class="like-btn" @click="toggleLike">
@@ -175,6 +198,57 @@ export default ArticleDetailLogic
   padding: 0.5rem 1.5rem;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.explain-btn {
+  position: absolute;
+  z-index: 1000;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: #222;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.explain-btn:hover {
+  background: #444;
+}
+
+.explain-popup {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 320px;
+  max-height: 45vh;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 2000;
+}
+
+.explain-header {
+  padding: 10px 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.close-btn {
+  cursor: pointer;
+  color: #999;
+}
+
+.explain-content {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-y: auto;
 }
 
 

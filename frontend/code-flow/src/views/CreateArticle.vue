@@ -77,11 +77,26 @@
           <EditorContent :editor="editor" class="editor-content"/>
         </div>
       </div>
-      
+
       <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="handleCancel">取消</button>
-        <button type="submit" class="btn-submit" :disabled="submitting">{{ submitting ? '提交中...' : '发布文章' }}</button>
+        <button
+            type="button"
+            class="btn-draft"
+            @click="handleSaveDraft"
+        >
+          💾 保存草稿
+        </button>
+
+        <button
+            type="submit"
+            class="btn-submit"
+            @click="handleSubmit"
+            :disabled="submitting"
+        >
+          {{ submitting ? '提交中...' : '发布文章' }}
+        </button>
       </div>
+
     </form>
   </div>
 </template>

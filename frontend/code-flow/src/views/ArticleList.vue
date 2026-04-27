@@ -23,32 +23,45 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from "vue";
+import {reactive, onMounted, watch} from "vue";
 import { useArticleStore } from "../stores/article";
 import axios from "@/utils/axios";
+import {useRoute} from "vue-router";
 
 const store = useArticleStore()
+const route = useRoute()
 
 const authorMap = reactive({})
 
-onMounted(async () => {
-  if (store.articles.length === 0) {
+const loadArticles = async () => {
+  const keyword = route.query.search
+
+  if (keyword) {
+    await store.searchArticles(keyword)
+  } else {
     await store.fetchArticles()
   }
 
   for (const article of store.articles) {
     loadAuthor(article.authorId)
   }
-})
+}
+
+onMounted(loadArticles)
+
+// 🔥 监听 URL 搜索参数变化
+watch(
+    () => route.query.search,
+    () => {
+      loadArticles()
+    }
+)
 
 const loadAuthor = async (id) => {
   if (authorMap[id]) return
-
-  const res = await axios.get(`http://localhost:8080/api/users/${id}`)
-  console.log(res.data.username)
+  const res = await axios.get(`/api/users/${id}`)
   authorMap[id] = res.data.username
 }
-
 </script>
 
 <style scoped>

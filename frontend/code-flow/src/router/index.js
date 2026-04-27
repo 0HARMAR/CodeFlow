@@ -44,6 +44,11 @@ const routes = [
     path: '/user-center',
     name: 'UserCenter',
     component: () => import('../views/UserCenter.vue')
+  },
+  {
+    path: '/creation-center',
+    name: 'CreationCenter',
+    component: () => import('../views/CreationCenter.vue')
   }
 ]
 

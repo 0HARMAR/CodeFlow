@@ -25,5 +25,12 @@ export const useUserStore = defineStore('user', {
             console.log('🧠 user api result:', res.data)
             return res.data
         },
+
+        async updateUser(userData) {
+            console.log('🧠 updateUser called with:', userData)
+            const res = await axios.post(`http://localhost:8080/api/users/update`, userData)
+            console.log('🧠 user api result:', res.data)
+            return res.data
+        },
     },
 })

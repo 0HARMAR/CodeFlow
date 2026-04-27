@@ -1,4 +1,4 @@
-package com.example.codeflow.domain;
+package com.example.codeflow.domain.recommend;
 
 import com.example.codeflow.domain.entity.ArticleMetrics;
 import com.example.codeflow.model.Article;

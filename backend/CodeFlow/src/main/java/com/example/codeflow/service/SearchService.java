@@ -1,17 +1,24 @@
 package com.example.codeflow.service;
 
 import com.example.codeflow.domain.search.CorpusStats;
+import com.example.codeflow.domain.search.ReciprocalRankFusion;
+import com.example.codeflow.domain.search.aievaluation.AiClientService;
 import com.example.codeflow.domain.search.aievaluation.AiEvaluation;
+import com.example.codeflow.domain.search.aievaluation.AiScorer;
+import com.example.codeflow.domain.search.aievaluation.AievalParser;
+import com.example.codeflow.model.Article;
+import com.example.codeflow.repository.ArticleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
-    // search system tree vector, key=article id, value=score
+    // search system three vector, key=article id, value=score
     Map<Long, Double> tagSystemVector = Map.of();
     @Autowired
     KeywordTagService keywordTagService;
@@ -19,7 +26,29 @@ public class SearchService {
     Map<Long, Double> contentRelevanceVector = Map.of();
     @Autowired
     RelevanceService relevanceService;
-    AiEvaluation aiEvaluation;
+
+    @Autowired
+    AiClientService aiClientService;
+    AiEvaluation aiEvaluation = new AiEvaluation();
+    Map<Long, Double> aiEvaluationVector = Map.of();
+
+    @Autowired
+    ArticleRepository articleRepository;
+
+    private Map<Long, Double> calculateAiEvaluation() {
+        Map<Integer, AiScorer> keywordContentMatch = aiEvaluation.getKeywordContentMatch();
+        Map<Integer, AiScorer> titleContentMatch = aiEvaluation.getTitleContentMatch();
+        Map<Integer, AiScorer> accuracy = aiEvaluation.getAccuracy();
+
+        // simple arithmetic mean value
+        return keywordContentMatch.keySet().stream()
+                .collect(Collectors.toMap(
+                        key -> Long.valueOf(key),
+                        key -> (keywordContentMatch.get(key).getScore() +
+                                titleContentMatch.get(key).getScore() +
+                                accuracy.get(key).getScore()) / 3.0
+                ));
+    }
 
     public void getTagSystemVector(String keyword) {
         tagSystemVector = keywordTagService.keywordToArticleScore(keyword);
@@ -29,66 +58,35 @@ public class SearchService {
         contentRelevanceVector = relevanceService.buildRelevanceVector(keyword);
     }
 
-    public void search(String keyword) {
+    public List<Article> search(String keyword) {
         getTagSystemVector(keyword);
         getContentRelevanceVector(keyword);
+        aiEvaluation = aiClientService.aiEvaluate(keyword);
+        aiEvaluationVector = calculateAiEvaluation();
 
         System.out.println("search keyword=" + keyword);
         System.out.println("tag system vector=" + tagSystemVector);
         System.out.println("content relevance vector=" + contentRelevanceVector);
+        System.out.println("ai evaluation vector=" + aiEvaluationVector);
 
-        // 合并两个map的key，确保所有文章都有对应的分数
-        Map<Long, Double> weightedSumMap = new java.util.HashMap<>();
+        ReciprocalRankFusion rrf = new ReciprocalRankFusion(
+                60.0,
+                200
+        );
 
-        // 处理所有文章的加权求和
-        for (Long articleId : tagSystemVector.keySet()) {
-            double tagScore = tagSystemVector.get(articleId);
-            double contentScore = contentRelevanceVector.getOrDefault(articleId, 0.0);
-            weightedSumMap.put(articleId, 0.4 * tagScore + 0.6 * contentScore);
-        }
+        Map<Long, Double> fused = rrf.fuse(
+                tagSystemVector,
+                contentRelevanceVector,
+                aiEvaluationVector
+        );
 
-        // 添加contentRelevanceVector中有但tagSystemVector中没有的文章
-        for (Long articleId : contentRelevanceVector.keySet()) {
-            if (!tagSystemVector.containsKey(articleId)) {
-                double contentScore = contentRelevanceVector.get(articleId);
-                weightedSumMap.put(articleId, 0.4 * 0.0 + 0.6 * contentScore);
-            }
-        }
+        List<Map.Entry<Long, Double>> ranked = rrf.sortResult(fused);
+        System.out.println("fused vector=" + fused);
+        System.out.println("ranked=" + ranked);
 
-        System.out.println("加权求和结果");
-        System.out.println(weightedSumMap);
-
-        // 按分数排序
-        List<Map.Entry<Long, Double>> sortedEntries = weightedSumMap.entrySet().stream()
-                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
-                .toList();
-
-        System.out.println("加权求和降序");
-        sortedEntries.forEach(entry ->
-                System.out.println("Article ID: " + entry.getKey() + ", Score: " + entry.getValue()));
-
-        // 写入 CSV 文件，Python 可以直接读取
-        String fileName = "article_scores.csv";
-        try (FileWriter writer = new FileWriter(fileName)) {
-            // 写入表头
-            writer.write("articleId,tagScore,contentScore,combinedScore\n");
-
-            // 写入每篇文章数据
-            Set<Long> allArticleIds = new HashSet<>();
-            allArticleIds.addAll(tagSystemVector.keySet());
-            allArticleIds.addAll(contentRelevanceVector.keySet());
-
-            for (Long articleId : allArticleIds) {
-                double tagScore = tagSystemVector.getOrDefault(articleId, 0.0);
-                double contentScore = contentRelevanceVector.getOrDefault(articleId, 0.0);
-                double combinedScore = weightedSumMap.getOrDefault(articleId, 0.0);
-
-                writer.write(articleId + "," + tagScore + "," + contentScore + "," + combinedScore + "\n");
-            }
-
-            System.out.println("Data has been written to " + fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        List<Article> articles = ranked.stream()
+                .map(entry -> articleRepository.findById(entry.getKey()).get())
+                .collect(Collectors.toList());
+        return articles;
     }
 }

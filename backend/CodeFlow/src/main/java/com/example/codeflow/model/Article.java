@@ -43,6 +43,10 @@ public class Article {
     @Column(name = "views")
     private Integer views = 0;
 
+    // DRAFT | PUBLISHED
+    @Column(name = "status", nullable = false)
+    private String status;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -130,5 +134,13 @@ public class Article {
 
     public void setViews(Integer views) {
         this.views = views;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -1,25 +1,21 @@
 package com.example.codeflow.service.impl;
 
-import com.example.codeflow.domain.ArticleMetricsCalculator;
-import com.example.codeflow.domain.ArticleScoreCalculator;
-import com.example.codeflow.domain.entity.ArticleMetrics;
+import com.example.codeflow.domain.recommend.ArticleMetricsCalculator;
 import com.example.codeflow.dto.ArticleDTO;
 import com.example.codeflow.model.Article;
 import com.example.codeflow.model.ArticleTag;
-import com.example.codeflow.model.User;
 import com.example.codeflow.repository.ArticleRepository;
 import com.example.codeflow.repository.ArticleTagRepository;
 import com.example.codeflow.service.ArticleService;
 import com.example.codeflow.service.RedisService;
-import com.example.codeflow.service.UserService;
+import com.example.codeflow.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static com.example.codeflow.domain.ArticleScoreCalculator.calculateScore;
+import static com.example.codeflow.domain.recommend.ArticleScoreCalculator.calculateScore;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -35,6 +31,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    SearchService searchService;
     
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
@@ -115,6 +114,7 @@ public class ArticleServiceImpl implements ArticleService {
         String authorId = articleDTO.getAuthorId();
         article.setOwnerId(authorId);
         article.setLikes(articleDTO.getLikes());
+        article.setStatus(articleDTO.getStatus());
         
         // 保存到数据库
         Article savedArticle = articleRepository.save(article);
@@ -141,6 +141,7 @@ public class ArticleServiceImpl implements ArticleService {
         existing.setLikes(updatedArticle.getLikes());
         existing.setOwnerId(updatedArticle.getAuthorId());
         existing.setViews(updatedArticle.getViews());
+        existing.setStatus(updatedArticle.getStatus());
 
         // save to database
         Article savedArticle = articleRepository.save(existing);
@@ -195,9 +196,21 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
+    @Override
+    public List<ArticleDTO> search(String keyword) {
+        List<Article> articles = searchService.search(keyword);
+        List<ArticleDTO> articleDTOs = new ArrayList<>();
+        for (Article article : articles) {
+            String views = redisService.getValue("article:" + article.getId());
+            article.setViews((views == null) ? 0 : Integer.parseInt(views));
+            articleDTOs.add(convertToDTO(article));
+        }
+        return articleDTOs;
+    }
+
 
     // 将Article实体转换为ArticleDTO
-    private ArticleDTO convertToDTO(Article article) {
+    public ArticleDTO convertToDTO(Article article) {
         ArticleDTO dto = new ArticleDTO();
         dto.setId(article.getId());
         dto.setTitle(article.getTitle());
@@ -217,6 +230,7 @@ public class ArticleServiceImpl implements ArticleService {
         dto.setUpdatedAt(article.getUpdatedAt());
 
         dto.setViews(article.getViews());
+        dto.setStatus(article.getStatus());
 
         return dto;
     }

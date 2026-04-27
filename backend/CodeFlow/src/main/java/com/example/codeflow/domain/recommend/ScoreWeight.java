@@ -1,4 +1,4 @@
-package com.example.codeflow.domain;
+package com.example.codeflow.domain.recommend;
 
 public class ScoreWeight {
 

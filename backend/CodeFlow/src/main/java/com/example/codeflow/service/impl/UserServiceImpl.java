@@ -137,4 +137,31 @@ public class UserServiceImpl implements UserService {
         logger.info("用户删除成功，ID: {}", userId);
         return true;
     }
+
+    @Override
+    public User updateUser(User user) {
+        // 首先检查用户是否存在
+        User existingUser = userRepository.findById(user.getId()).orElse(null);
+        if (existingUser == null) {
+            logger.warn("尝试更新不存在的用户，ID: {}", user.getId());
+            throw new RuntimeException("用户不存在");
+        }
+        
+        // 更新用户信息
+        existingUser.setUsername(user.getUsername());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setAvatar(user.getAvatar());
+        existingUser.setUpdatedAt(new Date());
+        existingUser.setBio(user.getBio());
+        
+        // 如果提供了新的密码，则更新密码
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            existingUser.setPassword(user.getPassword());
+        }
+        
+        // 保存并返回更新后的用户
+        User updatedUser = userRepository.save(existingUser);
+        logger.info("用户更新成功，ID: {}", updatedUser.getId());
+        return updatedUser;
+    }
 }

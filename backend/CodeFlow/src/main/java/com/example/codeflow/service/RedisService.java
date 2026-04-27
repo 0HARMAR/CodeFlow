@@ -24,6 +24,14 @@ public class RedisService {
         return value != null ? value.toString() : null;
     }
 
+    public Map<Object, Object> getHashAll(String key) {
+        return redisTemplate.opsForHash().entries(key);
+    }
+
+    public void setHashAll(String key, Map<Object, Object> map) {
+        redisTemplate.opsForHash().putAll(key, map);
+    }
+
     public Map<Object, Object> getHash(String key) {
         return redisTemplate.opsForHash().entries(key);
     }

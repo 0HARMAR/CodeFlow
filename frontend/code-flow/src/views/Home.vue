@@ -5,11 +5,23 @@
       <p>分享技术见解和生活感悟</p>
       <router-link to="/articles" class="btn-primary">浏览文章</router-link>
     </div>
-    
+
     <div class="featured-section">
-      <h2>精选文章</h2>
+      <div class="featured-header">
+        <h2>推荐文章</h2>
+
+        <!-- 刷新按钮 -->
+        <button class="refresh-btn" @click="refreshFeatured">
+          🔄
+        </button>
+      </div>
+
       <div class="article-cards">
-        <div class="article-card" v-for="article in featuredArticles" :key="article.id">
+        <div
+            class="article-card"
+            v-for="article in featuredArticles"
+            :key="article.id"
+        >
           <router-link :to="`/article/${article.id}`">
             <h3>{{ article.title }}</h3>
             <p>{{ article.excerpt }}</p>
@@ -18,6 +30,7 @@
         </div>
       </div>
     </div>
+
 
     <div class="avatar-wrapper left nazuna">
       <img
@@ -66,77 +79,90 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import axios from '@/utils/axios'
+import {UserAction} from "@/enums/UserAction";
 
 export default {
   name: 'HomePage',
-  data() {
-    return {
-      featuredArticles: [],  // 初始为空，等待后端数据
-      showNazunaBubble: false,
-      showNijikaBubble: false,
-      nazunaMessages: [], // 存放和小荠的聊天消息
-      userInput: "",      // 用户输入
-      isLoading: false,    // AI 回复加载状态
+  setup() {
+    // 响应式数据
+    let featuredArticles = ref([])  // 初始为空，等待后端数据
+    let featuredArticlesAction = new Map()
+    const showNazunaBubble = ref(false)
+    const showNijikaBubble = ref(false)
+    const nazunaMessages = ref([]) // 存放和小荠的聊天消息
+    const userInput = ref("")      // 用户输入
+    const isLoading = ref(false)    // AI 回复加载状态
 
-      // 虹夏
-      nijikaMessages: [],
-      nijikaInput: "",
-      isNijikaLoading: false
-    }
-  },
-  mounted() {
-    this.loadTopArticles()
-  },
-  methods: {
-    async loadTopArticles() {
+    // 虹夏
+    const nijikaMessages = ref([])
+    const nijikaInput = ref("")
+    const isNijikaLoading = ref(false)
+
+    // 加载推荐文章
+    const loadTopArticles = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/users/me')
-        const user = response.data
+        const refreshData = getRefreshData(true)
+        const refreshArticles = await axios.post(`http://localhost:8080/api/recommend/refresh?size=20`,refreshData)
+        featuredArticles.value = refreshArticles.data
 
-        const res = await axios.get(
-            'http://localhost:8080/api/articles/top/top10',
-            {
-              params: {
-                userId: user.id
-              }
-            }
-        )
-        this.featuredArticles = res.data
+        // ① 先读已有 actions
+        const raw = localStorage.getItem('actions')
+        const existing = raw ? new Map(JSON.parse(raw)) : new Map()
+
+        // ② 只给“没有记录”的文章补 IMPRESSION
+        for (const article of featuredArticles.value) {
+          const id = String(article.id)
+          if (!existing.has(id)) {
+            existing.set(id, UserAction.IMPRESSION)
+          }
+        }
+
+        // ③ 回写
+        featuredArticlesAction = existing
+        localStorage.setItem('actions', JSON.stringify(Array.from(existing)))
       } catch (error) {
         console.error('加载文章失败:', error)
       }
-    },
-    toggleNazuna() {
-      this.showNazunaBubble = !this.showNazunaBubble
-      this.showNijikaBubble = false
-      if (this.showNazunaBubble && this.nazunaMessages.length === 0) {
+    }
+
+
+    // 切换小荠对话框显示
+    const toggleNazuna = () => {
+      showNazunaBubble.value = !showNazunaBubble.value
+      showNijikaBubble.value = false
+      if (showNazunaBubble.value && nazunaMessages.value.length === 0) {
         // 初始问候
-        this.nazunaMessages.push({ role: 'ai', content: '今天天气不错，要写点什么吗？' })
+        nazunaMessages.value.push({ role: 'ai', content: '今天天气不错，要写点什么吗？' })
       }
-    },
-    toggleNijika() {
-      this.showNijikaBubble = !this.showNijikaBubble
-      this.showNazunaBubble = false
-      if (this.showNijikaBubble && this.nijikaMessages.length === 0) {
-        this.nijikaMessages.push({ role: 'ai', content: '嗨~想看看最近的文章吗？' })
+    }
+
+    // 切换虹夏对话框显示
+    const toggleNijika = () => {
+      showNijikaBubble.value = !showNijikaBubble.value
+      showNazunaBubble.value = false
+      if (showNijikaBubble.value && nijikaMessages.value.length === 0) {
+        nijikaMessages.value.push({ role: 'ai', content: '嗨~想看看最近的文章吗？' })
       }
-    },
-    async sendMessage() {
-      if (!this.userInput.trim()) return
-      const messageContent = this.userInput.trim()
+    }
+
+    // 发送小荠消息
+    const sendMessage = async () => {
+      if (!userInput.value.trim()) return
+      const messageContent = userInput.value.trim()
 
       // 用户消息加入气泡
-      this.nazunaMessages.push({ role: 'user', content: messageContent })
-      this.userInput = ""
-      this.isLoading = true
+      nazunaMessages.value.push({ role: 'user', content: messageContent })
+      userInput.value = ""
+      isLoading.value = true
 
       try {
         const response = await axios.post('http://localhost:3000/chat', {
           messages: [
             { role: 'system', content: '你是一个可爱的七草荠 AI 助手' },
             // 将用户历史消息也加入，可以提供上下文
-            ...this.nazunaMessages.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
+            ...nazunaMessages.value.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
             { role: 'user', content: messageContent }
           ]
         }, {
@@ -146,47 +172,110 @@ export default {
         })
 
         // 假设后端返回 { reply: "..." }
-        this.nazunaMessages.push({ role: 'ai', content: response.data.reply })
+        nazunaMessages.value.push({ role: 'ai', content: response.data.reply })
       } catch (error) {
         console.error('AI 请求失败:', error)
-        this.nazunaMessages.push({ role: 'ai', content: '嗯…我现在好像有点忙，请稍后再试~' })
+        nazunaMessages.value.push({ role: 'ai', content: '嗯…我现在好像有点忙，请稍后再试~' })
       } finally {
-        this.isLoading = false
-        this.$nextTick(() => {
-          const bubble = this.$el.querySelector('.chat-bubble')
+        isLoading.value = false
+        // 使用 nextTick 的替代方案
+        setTimeout(() => {
+          const bubble = document.querySelector('.chat-bubble')
           if (bubble) bubble.scrollTop = bubble.scrollHeight
-        })
+        }, 0)
       }
-    },
+    }
 
-    async sendNijikaMessage() {
-      if (!this.nijikaInput.trim()) return
-      const messageContent = this.nijikaInput.trim()
-      this.nijikaMessages.push({ role: 'user', content: messageContent })
-      this.nijikaInput = ""
-      this.isNijikaLoading = true
+    // 发送虹夏消息
+    const sendNijikaMessage = async () => {
+      if (!nijikaInput.value.trim()) return
+      const messageContent = nijikaInput.value.trim()
+      nijikaMessages.value.push({ role: 'user', content: messageContent })
+      nijikaInput.value = ""
+      isNijikaLoading.value = true
       try {
         const response = await axios.post('http://localhost:3000/chat', {
           messages: [
             { role: 'system', content: '你是一个活泼的虹夏 AI 助手' },
-            ...this.nijikaMessages.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
+            ...nijikaMessages.value.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
             { role: 'user', content: messageContent }
           ]
         })
-        this.nijikaMessages.push({ role: 'ai', content: response.data.reply })
+        nijikaMessages.value.push({ role: 'ai', content: response.data.reply })
       } catch (error) {
-        this.nijikaMessages.push({ role: 'ai', content: '嗯…我现在有点忙，请稍后再试~' })
+        nijikaMessages.value.push({ role: 'ai', content: '嗯…我现在有点忙，请稍后再试~' })
       } finally {
-        this.isNijikaLoading = false
-        this.$nextTick(() => {
-          const bubble = this.$el.querySelector('.avatar-wrapper.right .chat-bubble')
+        isNijikaLoading.value = false
+        setTimeout(() => {
+          const bubble = document.querySelector('.avatar-wrapper.right .chat-bubble')
           if (bubble) bubble.scrollTop = bubble.scrollHeight
-        })
+        }, 0)
       }
+    }
+
+    const getRefreshData = (init) => {
+      const raw = localStorage.getItem(`actions`);
+      const parsed = JSON.parse(raw)
+      featuredArticlesAction = new Map(parsed)
+      if (init) {
+        const refreshData = Array.from(featuredArticlesAction.entries()).map(([articleId,]) => ({
+          articleId: articleId,
+          action: 'IMPRESSION'
+        }));
+        return refreshData
+      }
+      const refreshData = Array.from(featuredArticlesAction.entries()).map(([articleId, action]) => ({
+        articleId: articleId,
+        action: getActionName(action)
+      }));
+
+      return refreshData
+    }
+
+    const refreshFeatured = async () => {
+      const refreshData = getRefreshData(false)
+      const refreshArticles = await axios.post(`http://localhost:8080/api/recommend/refresh?size=20`,refreshData)
+      console.log(refreshArticles.data)
+      featuredArticles.value = refreshArticles.data
+    }
+
+    const getActionName = (actionObj) => {
+      for (const [key, value] of Object.entries(UserAction)) {
+        if (value.level == actionObj.level) {
+          return key;
+        }
+      }
+      return null; // 如果没找到
+    }
+
+
+    // 组件挂载后加载文章
+    onMounted(() => {
+      loadTopArticles()
+    })
+
+    // 返回需要在模板中使用的属性和方法
+    return {
+      featuredArticles,
+      showNazunaBubble,
+      showNijikaBubble,
+      nazunaMessages,
+      userInput,
+      isLoading,
+      nijikaMessages,
+      nijikaInput,
+      isNijikaLoading,
+      loadTopArticles,
+      toggleNazuna,
+      toggleNijika,
+      sendMessage,
+      sendNijikaMessage,
+      refreshFeatured
     }
   }
 }
 </script>
+
 
 
 <style>
@@ -456,6 +545,24 @@ export default {
 .input-area button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.featured-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 30px;
+  transition: transform 0.4s ease;
+}
+
+.refresh-btn:hover {
+  transform: rotate(180deg);
 }
 
 </style>
