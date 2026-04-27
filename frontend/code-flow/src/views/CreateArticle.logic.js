@@ -119,7 +119,7 @@ export default {
             try {
                 const content = editor.value.getText()
 
-                const response = await fetch('http://localhost:3000/chat', {
+                const response = await fetch('http://localhost:8080/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

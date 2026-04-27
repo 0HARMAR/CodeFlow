@@ -2,10 +2,10 @@ package com.example.codeflow.domain.search.aievaluation;
 
 import com.example.codeflow.model.Article;
 import com.example.codeflow.repository.ArticleRepository;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -17,31 +17,46 @@ import java.util.Map;
 @Service
 public class AiClientService {
 
-    private RestClient restClient;
-
-    private ArticleRepository articleRepository;
-
-    public AiClientService(ArticleRepository articleRepository) {
-        this.restClient = RestClient.builder()
-                .baseUrl("http://localhost:3000")
-                .build();
-        this.articleRepository = articleRepository;
-    }
+    private final RestClient restClient;
+    private final ArticleRepository articleRepository;
+    private final String model;
 
     private AiEvaluation aiEvaluation = new AiEvaluation();
 
+    public AiClientService(ArticleRepository articleRepository,
+                           @Value("${deepseek.api.key}") String apiKey,
+                           @Value("${deepseek.api.base-url}") String baseUrl,
+                           @Value("${deepseek.api.model}") String model) {
+        this.restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .build();
+        this.articleRepository = articleRepository;
+        this.model = model;
+    }
+
     public String chat(List<Message> messages) {
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", messages.stream()
+                        .map(m -> Map.of("role", m.getRole(), "content", m.getContent()))
+                        .toList()
+        );
 
-        ChatRequest request = new ChatRequest(messages);
-
-        ChatResponse response = restClient.post()
-                .uri("/chat")
+        String response = restClient.post()
+                .uri("/v1/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
+                .body(requestBody)
                 .retrieve()
-                .body(ChatResponse.class);
+                .body(String.class);
 
-        return response != null ? response.getReply() : null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            return root.path("choices").get(0).path("message").path("content").asText();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse AI response", e);
+        }
     }
 
     public void keywordContentMatch(String keyword) {

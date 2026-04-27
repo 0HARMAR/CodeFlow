@@ -158,7 +158,7 @@ export default {
       isLoading.value = true
 
       try {
-        const response = await axios.post('http://localhost:3000/chat', {
+        const response = await axios.post('http://localhost:8080/api/chat', {
           messages: [
             { role: 'system', content: '你是一个可爱的七草荠 AI 助手' },
             // 将用户历史消息也加入，可以提供上下文
@@ -194,7 +194,7 @@ export default {
       nijikaInput.value = ""
       isNijikaLoading.value = true
       try {
-        const response = await axios.post('http://localhost:3000/chat', {
+        const response = await axios.post('http://localhost:8080/api/chat', {
           messages: [
             { role: 'system', content: '你是一个活泼的虹夏 AI 助手' },
             ...nijikaMessages.value.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
