@@ -17,7 +17,8 @@ public class AiEvaluationTest {
 
     @Test
     void test5() {
-        AiClientService service = new AiClientService(articleRepository);
+        AiClientService service = new AiClientService(articleRepository,
+                "sk-test", "https://api.deepseek.com", "deepseek-chat");
         String keyword = "java";
         AiEvaluation result = service.aiEvaluate(keyword);
         System.out.println(result);

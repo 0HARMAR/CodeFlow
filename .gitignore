@@ -14,3 +14,4 @@ backend/CodeFlow/src/test
 frontend/code-flow/node_modules
 frontend/code-flow/public
 *.aieval
+secrets.properties
