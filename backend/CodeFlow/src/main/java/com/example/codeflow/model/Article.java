@@ -36,9 +36,8 @@ public class Article {
     @Column(nullable = false)
     private Integer likes = 0;
 
-    @Column(nullable = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private String ownerId;
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
 
     @Column(name = "views")
     private Integer views = 0;
@@ -120,11 +119,11 @@ public class Article {
         this.likes = likes;
     }
 
-    public void setOwnerId(String ownerId) {
+    public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
 
-    public String getOwnerId() {
+    public Long getOwnerId() {
         return this.ownerId;
     }
 

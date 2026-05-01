@@ -12,7 +12,7 @@ public class ArticleDTO {
     private String date;
     private String category;
 
-    private String authorId;
+    private Long authorId;
     private Integer likes;
 
     private Date updatedAt;
@@ -69,11 +69,11 @@ public class ArticleDTO {
         this.category = category;
     }
 
-    public void setAuthorId(String authorId) {
+    public void setAuthorId(Long authorId) {
         this.authorId = authorId;
     }
 
-    public String getAuthorId() {
+    public Long getAuthorId() {
         return authorId;
     }
 

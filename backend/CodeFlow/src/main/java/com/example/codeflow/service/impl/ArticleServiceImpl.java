@@ -111,8 +111,7 @@ public class ArticleServiceImpl implements ArticleService {
         article.setCreatedAt(now);
         article.setUpdatedAt(now);
 
-        String authorId = articleDTO.getAuthorId();
-        article.setOwnerId(authorId);
+        article.setOwnerId(articleDTO.getAuthorId());
         article.setLikes(articleDTO.getLikes());
         article.setStatus(articleDTO.getStatus());
         
@@ -176,7 +175,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<ArticleDTO> getArticlesByUserId(Long userId) {
-        List<Article> articles = articleRepository.findByOwnerId(String.valueOf(userId));
+        List<Article> articles = articleRepository.findByOwnerId(userId);
         List<ArticleDTO> articleDTOs = new ArrayList<>();
 
         for (Article article : articles) {

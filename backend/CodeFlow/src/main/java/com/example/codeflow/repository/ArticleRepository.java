@@ -16,7 +16,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByPublishDateBetween(Date startDate, Date endDate);
     List<Article> findAllByOrderByPublishDateDesc();
     // 根据用户ID查询该用户的所有文章
-    List<Article> findByOwnerId(String userId);
+    List<Article> findByOwnerId(Long userId);
 
     @Modifying
     @Query("UPDATE Article a SET a.views = COALESCE(a.views, 0) + :increment WHERE a.id = :id")
