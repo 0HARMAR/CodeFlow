@@ -15,3 +15,8 @@ frontend/code-flow/node_modules
 frontend/code-flow/public
 *.aieval
 secrets.properties
+node_modules/
+package-lock.json
+package.json
+untitled/
+backend/CodeFlow/article_scores.csv
