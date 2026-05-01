@@ -23,4 +23,10 @@ public class AgentController {
         String reply = blogAgentService.run(request.getMessages());
         return ResponseEntity.ok(Map.of("reply", reply));
     }
+
+    @PostMapping("/api/agent/nazuna")
+    public ResponseEntity<Map<String, String>> agentNazuna(@RequestBody ChatRequest request) {
+        String reply = blogAgentService.run(request.getMessages(), BlogAgentService.NAZUNA_SYSTEM_PROMPT);
+        return ResponseEntity.ok(Map.of("reply", reply));
+    }
 }
