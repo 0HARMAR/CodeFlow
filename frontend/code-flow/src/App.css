@@ -221,6 +221,54 @@ body {
   background-color: #4fd1c6;
 }
 
+/* ===== 全局助手形象定位 ===== */
+
+.rainka-avatar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 120px;
+  height: auto;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.3s, filter 0.3s;
+  filter: drop-shadow(0 4px 12px rgba(167, 206, 188, 0.4));
+}
+
+.rainka-avatar:hover {
+  transform: scale(1.12) rotate(-5deg);
+  filter: drop-shadow(0 6px 20px rgba(167, 206, 188, 0.6));
+}
+
+.nazuna-avatar {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 140px;
+  height: auto;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.3s;
+}
+
+.nazuna-avatar:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.avatar-wrapper {
+  position: fixed;
+  bottom: 24px;
+  z-index: 1000;
+}
+
+.avatar-wrapper.left {
+  left: 24px;
+}
+
+.avatar-wrapper.right {
+  right: 24px;
+}
+
 /* 响应式样式 */
 @media (max-width: 768px) {
   .user-name {

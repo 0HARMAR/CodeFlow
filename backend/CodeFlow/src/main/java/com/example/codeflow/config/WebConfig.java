@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 配置静态资源访问，允许访问uploads目录下的文件
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/")
+                .addResourceLocations("file:../../uploads/")
                 .setCachePeriod(3600);
     }
 }

@@ -14,7 +14,7 @@ import java.util.UUID;
 public class FileStorageService {
     
     // 文件存储路径
-    private final String uploadDir = "uploads/avatars";
+    private final String uploadDir = "../../uploads/avatars";
     
     // 访问路径前缀
     private final String baseUrl = "/uploads/avatars/";

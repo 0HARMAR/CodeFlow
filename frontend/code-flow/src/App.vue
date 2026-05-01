@@ -22,7 +22,7 @@
           <!-- 登录状态显示 -->
           <div v-if="user" class="user-menu-container">
             <div class="user-menu-trigger" @click="toggleUserMenu">
-              <img alt="用户头像" id = "avatar" class="user-avatar">
+              <img alt="用户头像" :src="avatarSrc" class="user-avatar">
               <span class="user-name">{{ user.username }}</span>
               <span class="menu-arrow" :class="{ 'rotate': showUserMenu }">▼</span>
             </div>
@@ -60,6 +60,10 @@
         <p>&copy; {{ new Date().getFullYear() }} 我的博客系统 | 使用 Vue 3 构建</p>
       </div>
     </footer>
+
+    <!-- 全局助手形象 -->
+    <NijikaChat />
+    <NazunaChat />
   </div>
 </template>
 
@@ -67,12 +71,15 @@
 import axios from '@/utils/axios';
 import {useAuthStore} from "@/stores/auth";
 import SearchBar from "@/views/SearchBar.vue";
+import NijikaChat from "@/components/NijikaChat.vue";
+import NazunaChat from "@/components/NazunaChat.vue";
 export default {
   name: 'App',
-  components: {SearchBar},
+  components: {SearchBar, NijikaChat, NazunaChat},
   data() {
     return {
       user: null,
+      avatarSrc: '',
       showUserMenu: false,
       routeChangeHandler: null,
       isDark: false
@@ -134,6 +141,7 @@ export default {
                 // 确保头像URL存在且有效
                 if (!user.avatar || user.avatar === '') {
                   user.avatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&s=150';
+                  this.avatarSrc = user.avatar;
                 } else if (!user.avatar.startsWith('http')) {
                   // 如果头像URL不是完整的http地址，添加服务器地址前缀
                   const token = this.authStore.token;
@@ -144,14 +152,15 @@ export default {
                   })
                       .then(res => res.blob())
                       .then(blob => {
-                        const imgUrl = URL.createObjectURL(blob)
-                        document.getElementById('avatar').src = imgUrl;
+                        this.avatarSrc = URL.createObjectURL(blob);
                       })
+                } else {
+                  this.avatarSrc = user.avatar;
                 }
                 // 合并本地和远程的用户信息
                 user.loggedIn = true;
                 user.remember = localUser.remember;
-                
+
                 // 更新localStorage和当前状态
                 localStorage.setItem('user', JSON.stringify(user));
                 this.user = user;
@@ -162,6 +171,7 @@ export default {
                 if (!localUser.avatar || localUser.avatar === '') {
                   localUser.avatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&s=150';
                 }
+                this.avatarSrc = localUser.avatar;
                 this.user = localUser;
               });
           }
@@ -199,10 +209,9 @@ export default {
       event.preventDefault();
       // 清除localStorage中的用户信息
       localStorage.removeItem('user');
-      // 可选：如果有记住我的功能也清除
-      // localStorage.removeItem('rememberedUser');
       // 重置用户状态
       this.user = null;
+      this.avatarSrc = '';
       this.showUserMenu = false;
       // 刷新页面或跳转到登录页
       this.$router.push('/');
@@ -260,3 +269,7 @@ export default {
 </script>
 
 <style src="./App.css"></style>
+<style>
+@import '@/styles/nijika-chat.css';
+@import '@/styles/nazuna-chat.css';
+</style>
