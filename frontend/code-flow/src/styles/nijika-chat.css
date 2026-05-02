@@ -43,6 +43,11 @@
   color: #fff;
   flex-shrink: 0;
   user-select: none;
+  cursor: grab;
+}
+
+.chat-header:active {
+  cursor: grabbing;
 }
 
 .chat-header-left {

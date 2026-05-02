@@ -7,8 +7,8 @@
         @click="toggle"
     />
     <!-- 七草荠聊天面板 -->
-    <div v-if="showBubble" class="nazuna-chat-panel">
-      <div class="chat-header nazuna-header">
+    <div v-if="showBubble" class="nazuna-chat-panel" :style="panelStyle">
+      <div class="chat-header nazuna-header" @mousedown="onHeaderMouseDown">
         <div class="chat-header-left">
           <img src="../assets/nazuna.png" class="header-avatar" alt="七草荠" />
           <div>
@@ -82,6 +82,7 @@
 import { ref, nextTick } from 'vue'
 import axios from '@/utils/axios'
 import { parseMarkdownLinks } from '@/utils/markdown'
+import { useDraggable } from '@/utils/useDraggable'
 
 export default {
   name: 'NazunaChat',
@@ -96,6 +97,7 @@ export default {
     const toggle = () => {
       showBubble.value = !showBubble.value
       if (showBubble.value) {
+        resetPosition()
         emit('opened')
         if (messages.value.length === 0) {
           messages.value.push({ role: 'ai', content: '你好呀~我是七草荠，可以帮你搜索文章、推荐好文、查看评论哦。想找点什么呢？' })
@@ -130,11 +132,12 @@ export default {
       }
     }
 
+    const { panelStyle, onHeaderMouseDown, resetPosition } = useDraggable()
     const parseContent = (text) => parseMarkdownLinks(text)
 
     const close = () => { showBubble.value = false }
 
-    return { showBubble, messages, input, loading, nazunaChatRef, toggle, send, close, parseContent }
+    return { showBubble, messages, input, loading, nazunaChatRef, toggle, send, close, parseContent, panelStyle, onHeaderMouseDown }
   }
 }
 </script>

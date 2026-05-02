@@ -7,8 +7,8 @@
         @click="toggle"
     />
     <!-- 虹夏聊天面板 -->
-    <div v-if="showBubble" class="nijika-chat-panel">
-      <div class="chat-header">
+    <div v-if="showBubble" class="nijika-chat-panel" :style="panelStyle">
+      <div class="chat-header" @mousedown="onHeaderMouseDown">
         <div class="chat-header-left">
           <img src="../assets/nijika.png" class="header-avatar" alt="虹夏" />
           <div>
@@ -82,6 +82,7 @@
 import { ref, nextTick } from 'vue'
 import axios from '@/utils/axios'
 import { parseMarkdownLinks } from '@/utils/markdown'
+import { useDraggable } from '@/utils/useDraggable'
 
 export default {
   name: 'NijikaChat',
@@ -96,6 +97,7 @@ export default {
     const toggle = () => {
       showBubble.value = !showBubble.value
       if (showBubble.value) {
+        resetPosition()
         emit('opened')
         if (messages.value.length === 0) {
           messages.value.push({ role: 'ai', content: '嗨~我是虹夏！我可以帮你搜索文章、推荐好文、查看评论哦~想看点什么呢？' })
@@ -130,9 +132,10 @@ export default {
       }
     }
 
+    const { panelStyle, onHeaderMouseDown, resetPosition } = useDraggable()
     const parseContent = (text) => parseMarkdownLinks(text)
 
-    return { showBubble, messages, input, loading, chatRef, toggle, send, parseContent }
+    return { showBubble, messages, input, loading, chatRef, toggle, send, parseContent, panelStyle, onHeaderMouseDown, resetPosition }
   }
 }
 </script>

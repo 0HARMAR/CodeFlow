@@ -36,6 +36,11 @@
 
 .nazuna-header {
   background: linear-gradient(135deg, #f0abfc 0%, #e879a9 50%, #db5e8c 100%);
+  cursor: grab;
+}
+
+.nazuna-header:active {
+  cursor: grabbing;
 }
 
 /* ---- 消息区域 ---- */
