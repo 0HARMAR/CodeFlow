@@ -28,7 +28,13 @@
              :class="['msg-row', msg.role === 'ai' ? 'msg-ai' : 'msg-user']">
           <img v-if="msg.role === 'ai'" src="../assets/nijika.png" class="msg-avatar" alt="虹夏" />
           <div :class="['msg-bubble', msg.role === 'ai' ? 'bubble-ai' : 'bubble-user']">
-            {{ msg.content }}
+            <template v-if="msg.role === 'ai'">
+              <template v-for="(seg, si) in parseContent(msg.content)" :key="si">
+                <router-link v-if="seg.type === 'link'" :to="seg.url">{{ seg.content }}</router-link>
+                <span v-else>{{ seg.content }}</span>
+              </template>
+            </template>
+            <template v-else>{{ msg.content }}</template>
           </div>
         </div>
         <!-- 输入中动画 -->
@@ -75,6 +81,7 @@
 <script>
 import { ref, nextTick } from 'vue'
 import axios from '@/utils/axios'
+import { parseMarkdownLinks } from '@/utils/markdown'
 
 export default {
   name: 'NijikaChat',
@@ -123,7 +130,9 @@ export default {
       }
     }
 
-    return { showBubble, messages, input, loading, chatRef, toggle, send }
+    const parseContent = (text) => parseMarkdownLinks(text)
+
+    return { showBubble, messages, input, loading, chatRef, toggle, send, parseContent }
   }
 }
 </script>

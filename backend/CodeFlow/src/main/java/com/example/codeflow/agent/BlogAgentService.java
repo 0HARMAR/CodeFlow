@@ -40,6 +40,7 @@ public class BlogAgentService {
             4. 如果用户没有指定数量，默认返回5篇文章。
             5. 如果工具返回空结果，如实用轻松的语气告知用户。
             6. 回复中不要提到"工具"或"调用"，让对话自然流畅。
+            7. 提到文章时，必须使用 Markdown 链接格式 [文章标题](/article/文章ID)，方便用户点击跳转到文章详情页。每篇文章都要带链接。
             """;
 
     public static final String NAZUNA_SYSTEM_PROMPT = """
@@ -62,6 +63,7 @@ public class BlogAgentService {
             4. 如果用户没有指定数量，默认返回5篇文章。
             5. 如果工具返回空结果，用温暖的语气告知用户。
             6. 回复中不要提到"工具"或"调用"，让对话自然流畅。
+            7. 提到文章时，必须使用 Markdown 链接格式 [文章标题](/article/文章ID)，方便用户点击跳转到文章详情页。每篇文章都要带链接。
             """;
 
     private final Map<String, Tool> tools = new LinkedHashMap<>();

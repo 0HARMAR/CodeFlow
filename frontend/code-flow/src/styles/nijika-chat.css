@@ -177,6 +177,18 @@
   border: 1px solid #e5e7eb;
 }
 
+.bubble-ai a {
+  color: #2e8b57;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.bubble-ai a:hover {
+  color: #1a6b3c;
+}
+
 .bubble-user {
   background: linear-gradient(135deg, #A7CEBC 0%, #8BBFA4 100%);
   color: #1a3b2e;

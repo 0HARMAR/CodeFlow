@@ -78,6 +78,18 @@
   border: 1px solid #f5d0e0;
 }
 
+.bubble-ai-nazuna a {
+  color: #c2185b;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.bubble-ai-nazuna a:hover {
+  color: #880e4f;
+}
+
 .bubble-user-nazuna {
   background: linear-gradient(135deg, #f5a0c0 0%, #e88aaa 100%);
   color: #4a1a2e;
