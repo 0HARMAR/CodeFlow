@@ -182,6 +182,17 @@ export const useArticleStore = defineStore('article', {
             }
         },
 
+        async deleteArticle(id) {
+            this.error = ''
+            try {
+                await axios.delete(`http://localhost:8080/api/articles/${id}`)
+                this.articles = this.articles.filter(a => a.id !== id)
+            } catch (e) {
+                this.error = e.message || '删除失败'
+                throw e
+            }
+        },
+
         async searchArticles(keyword) {
             this.loading = true
             this.error = ''

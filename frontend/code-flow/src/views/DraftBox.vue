@@ -20,13 +20,13 @@
             {{ draft.title || '未命名草稿' }}
           </h3>
           <p class="draft-time">
-            最后编辑：{{ draft.updateAt }}
+            最后编辑：{{ formatTime(draft.updateAt) }}
           </p>
         </div>
 
         <div class="draft-actions">
           <button class="btn edit" @click="continueEdit(draft)">继续编辑</button>
-          <button class="btn delete">删除</button>
+          <button class="btn delete" @click="deleteDraft(draft)">删除</button>
         </div>
       </li>
     </ul>
@@ -47,7 +47,10 @@ export default {
     const router = useRouter();
 
     onMounted(async () => {
-      const articles = await articleStore.fetchArticles();
+      const userData = localStorage.getItem('user');
+      if (!userData) return;
+      const user = JSON.parse(userData);
+      const articles = await articleStore.findArticlesByOwnerId(user.id);
       for (let i = 0; i < articles.length; i++) {
         const article = articles[i];
         if (article.status === 'DRAFT') {
@@ -56,13 +59,33 @@ export default {
       }
     });
 
+    const formatTime = (val) => {
+      if (!val) return '';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+
     const continueEdit = (draft) => {
       router.push({ name: 'CreateArticle', query: { id: draft.id }})
     };
 
+    const deleteDraft = async (draft) => {
+      if (!confirm('确定要删除这篇草稿吗？')) return;
+      try {
+        await articleStore.deleteArticle(draft.id);
+        drafts.value = drafts.value.filter(d => d.id !== draft.id);
+      } catch (e) {
+        alert('删除失败，请稍后重试');
+      }
+    };
+
     return {
       drafts,
-      continueEdit
+      formatTime,
+      continueEdit,
+      deleteDraft
     };
   }
 };

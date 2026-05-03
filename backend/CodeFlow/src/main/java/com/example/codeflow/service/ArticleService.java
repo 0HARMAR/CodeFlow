@@ -21,5 +21,7 @@ public interface ArticleService {
 
     void relateTags(Long articleId, List<Long> tagIds);
 
+    void deleteArticle(Long id);
+
     List<ArticleDTO> search(String keyword);
 }

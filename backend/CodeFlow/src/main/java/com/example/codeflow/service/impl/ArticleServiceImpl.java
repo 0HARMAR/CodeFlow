@@ -196,6 +196,11 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public void deleteArticle(Long id) {
+        articleRepository.deleteById(id);
+    }
+
+    @Override
     public List<ArticleDTO> search(String keyword) {
         List<Article> articles = searchService.search(keyword);
         List<ArticleDTO> articleDTOs = new ArrayList<>();
