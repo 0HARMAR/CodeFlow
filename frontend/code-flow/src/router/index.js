@@ -19,11 +19,7 @@ const routes = [
     name: 'Register',
     component: UserRegister
   },
-  {
-    path: '/articles',
-    name: 'ArticleList',
-    component: () => import('../views/ArticleList.vue')
-  },
+
   {
     path: '/article/:id',
     name: 'ArticleDetail',

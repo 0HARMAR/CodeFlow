@@ -93,17 +93,6 @@ body {
   background-color: #4fd1c6; /* 悬停时稍微深一点，但更清新 */
 }
 
-.article-list-btn {
-  background-color: #68d391;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: bold;
-  color: white;
-}
-
-.article-list-btn:hover {
-  background-color: #4fd1c6;
-}
 
 .home-page-btn {
   background-color: #68d391;
