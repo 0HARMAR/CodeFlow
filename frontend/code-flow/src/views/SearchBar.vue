@@ -23,7 +23,7 @@ export default {
       const trimmedQuery = this.query.trim();
       if (trimmedQuery) {
         // 跳转到文章列表页，并带上搜索参数
-        this.$router.push({ path: "/articles", query: { search: trimmedQuery } });
+        this.$router.push({ path: "/search", query: { keyword: trimmedQuery } });
       }
     },
   },

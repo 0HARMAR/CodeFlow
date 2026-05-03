@@ -218,7 +218,10 @@ export const useArticleStore = defineStore('article', {
             } catch (e) {
                 this.error = e.message
                 console.error(e)
+            } finally {
+                this.loading = false
             }
+            return this.articles
         },
 
         async getRecommendArticles(size) {
