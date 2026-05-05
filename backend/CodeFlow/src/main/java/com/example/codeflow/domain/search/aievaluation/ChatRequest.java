@@ -5,6 +5,7 @@ import java.util.List;
 public class ChatRequest {
 
     private List<Message> messages;
+    private Long sessionId;
 
     public ChatRequest() {}
 
@@ -14,5 +15,13 @@ public class ChatRequest {
 
     public List<Message> getMessages() {
         return messages;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
     }
 }

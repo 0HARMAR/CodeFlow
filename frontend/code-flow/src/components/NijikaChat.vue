@@ -23,6 +23,29 @@
         </button>
       </div>
 
+      <!-- 会话列表 -->
+      <div class="session-bar">
+        <div class="session-tabs">
+          <div
+              v-for="s in sessions" :key="s.id"
+              :class="['session-tab', { active: s.id === activeSessionId }]"
+              @click="selectSession(s.id)"
+          >
+            <span class="session-tab-title">{{ s.title }}</span>
+            <button class="session-tab-close" @click.stop="removeSession(s.id)">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button class="new-session-btn" @click="newSession" title="新建会话">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
       <div class="chat-messages" ref="chatRef">
         <div v-for="(msg, index) in messages" :key="index"
              :class="['msg-row', msg.role === 'ai' ? 'msg-ai' : 'msg-user']">
@@ -36,6 +59,9 @@
             </template>
             <template v-else>{{ msg.content }}</template>
           </div>
+        </div>
+        <div v-if="messages.length > 0 && sessions.length > 0" class="clear-history-wrapper">
+          <button class="clear-history-btn" @click="clearHistory">清除当前对话</button>
         </div>
         <!-- 输入中动画 -->
         <div v-if="loading" class="msg-row msg-ai">
@@ -93,14 +119,67 @@ export default {
     const input = ref('')
     const loading = ref(false)
     const chatRef = ref(null)
+    const sessions = ref([])
+    const activeSessionId = ref(null)
 
-    const toggle = () => {
+    const loadSessions = async () => {
+      try {
+        const res = await axios.get('http://localhost:8080/api/agent/sessions', {
+          params: { agent: 'NIJIKA' }
+        })
+        sessions.value = res.data || []
+      } catch { /* ignore */ }
+    }
+
+    const selectSession = async (id) => {
+      activeSessionId.value = id
+      try {
+        const res = await axios.get(`http://localhost:8080/api/agent/sessions/${id}/messages`)
+        messages.value = res.data || []
+      } catch {
+        messages.value = [{ role: 'ai', content: '嗨~我是虹夏！我可以帮你搜索文章、推荐好文、查看评论哦~想看点什么呢？' }]
+      }
+    }
+
+    const newSession = () => {
+      activeSessionId.value = null
+      messages.value = [{ role: 'ai', content: '嗨~我是虹夏！我可以帮你搜索文章、推荐好文、查看评论哦~想看点什么呢？' }]
+    }
+
+    const removeSession = async (id) => {
+      try {
+        await axios.delete(`http://localhost:8080/api/agent/sessions/${id}`)
+      } catch { /* ignore */ }
+      sessions.value = sessions.value.filter(s => s.id !== id)
+      if (activeSessionId.value === id) {
+        if (sessions.value.length > 0) {
+          selectSession(sessions.value[0].id)
+        } else {
+          newSession()
+        }
+      }
+    }
+
+    const clearHistory = async () => {
+      if (activeSessionId.value) {
+        try {
+          await axios.delete(`http://localhost:8080/api/agent/sessions/${activeSessionId.value}`)
+        } catch { /* ignore */ }
+        sessions.value = sessions.value.filter(s => s.id !== activeSessionId.value)
+      }
+      newSession()
+    }
+
+    const toggle = async () => {
       showBubble.value = !showBubble.value
       if (showBubble.value) {
         resetPosition()
         emit('opened')
-        if (messages.value.length === 0) {
-          messages.value.push({ role: 'ai', content: '嗨~我是虹夏！我可以帮你搜索文章、推荐好文、查看评论哦~想看点什么呢？' })
+        await loadSessions()
+        if (sessions.value.length > 0) {
+          selectSession(sessions.value[0].id)
+        } else {
+          messages.value = [{ role: 'ai', content: '嗨~我是虹夏！我可以帮你搜索文章、推荐好文、查看评论哦~想看点什么呢？' }]
         }
       }
     }
@@ -117,10 +196,21 @@ export default {
           content: msg.content
         }))
 
-        const response = await axios.post('http://localhost:8080/api/agent', {
-          messages: apiMessages
-        })
+        const body = { messages: apiMessages }
+        if (activeSessionId.value) body.sessionId = activeSessionId.value
+
+        const response = await axios.post('http://localhost:8080/api/agent', body)
         messages.value.push({ role: 'ai', content: response.data.reply })
+
+        if (response.data.sessionId) {
+          if (!activeSessionId.value) {
+            activeSessionId.value = response.data.sessionId
+            await loadSessions()
+          } else {
+            // refresh session titles
+            loadSessions()
+          }
+        }
       } catch (error) {
         messages.value.push({ role: 'ai', content: '呜…信号不太好呢，请稍后再试~' })
       } finally {
@@ -135,7 +225,12 @@ export default {
     const { panelStyle, onHeaderMouseDown, resetPosition } = useDraggable()
     const parseContent = (text) => parseMarkdownLinks(text)
 
-    return { showBubble, messages, input, loading, chatRef, toggle, send, parseContent, panelStyle, onHeaderMouseDown, resetPosition }
+    return {
+      showBubble, messages, input, loading, chatRef,
+      sessions, activeSessionId,
+      toggle, send, clearHistory, selectSession, newSession, removeSession,
+      parseContent, panelStyle, onHeaderMouseDown, resetPosition
+    }
   }
 }
 </script>

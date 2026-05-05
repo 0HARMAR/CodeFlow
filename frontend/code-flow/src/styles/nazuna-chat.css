@@ -43,6 +43,33 @@
   cursor: grabbing;
 }
 
+/* ---- 会话栏 (粉色主题) ---- */
+
+.nazuna-session-bar {
+  background: #fdf2f8;
+  border-bottom: 1px solid #f5d0e0;
+}
+
+.nazuna-session-bar .session-tab:hover {
+  background: #f5d0e0;
+  color: #5D4037;
+}
+
+.nazuna-session-bar .session-tab.active {
+  background: #fce4ec;
+  color: #4a1a2e;
+}
+
+.nazuna-session-close:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.nazuna-new-btn:hover {
+  color: #4a1a2e;
+  background: #f5d0e0;
+}
+
 /* ---- 消息区域 ---- */
 
 .nazuna-chat-panel .chat-messages {
@@ -154,6 +181,25 @@
 .nazuna-send-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ---- 清除历史按钮 ---- */
+
+.nazuna-clear-btn {
+  border: 1px solid #e9d5e0;
+  border-radius: 14px;
+  background: #fdf2f8;
+  color: #c9a0b0;
+  font-size: 11px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.nazuna-clear-btn:hover {
+  color: #ef4444;
+  border-color: #fca5a5;
+  background: #fef2f2;
 }
 
 /* ---- 缩放拖拽手柄 ---- */
