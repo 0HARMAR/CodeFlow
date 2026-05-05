@@ -31,6 +31,7 @@ export default {
         const commentAuthors = ref({})
 
         const article = ref(null)
+        const liked = ref(false)
 
         // 新增响应式数据
         const showExplainBtn = ref(false)
@@ -58,6 +59,28 @@ export default {
         const updateAction = (action) => {
             if (action.level >= currentAction.level) currentAction = action
             console.log(currentAction.level)
+        }
+
+        const fetchArticle = async () => {
+            currentAction = UserAction.IMPRESSION
+            liked.value = false
+
+            article.value = await store.fetchArticleById(Number(props.id))
+
+            if (article.value?.id) {
+                await commentStore.fetchComments(article.value.id)
+                comments.value = commentStore.comments
+            }
+
+            if (article.value?.authorId) {
+                author.value = await userStore.findUserById(article.value.authorId)
+            }
+
+            const res = await axios.get(`http://localhost:8080/api/read?articleId=${article.value.id}`)
+            readTime.value = res.data.totalSeconds
+            lastReadAt.value = res.data.lastReadAt
+
+            updateAction(UserAction.CLICK)
         }
 
         // 处理文本选择的方法
@@ -182,23 +205,12 @@ ${selected}
         // 组件挂载时添加事件监听器
         onMounted(async () => {
             document.addEventListener("mouseup", handleTextSelect);
+            await fetchArticle()
+        })
 
-            article.value = await store.fetchArticleById(Number(props.id))
-
-            if (article.value?.id) {
-                await commentStore.fetchComments(article.value.id)
-                comments.value = commentStore.comments
-            }
-
-            if (article.value?.authorId) {
-                author.value = await userStore.findUserById(article.value.authorId)
-            }
-
-            const res = await axios.get(`http://localhost:8080/api/read?articleId=${article.value.id}`)
-            readTime.value = res.data.totalSeconds
-            lastReadAt.value = res.data.lastReadAt
-
-            updateAction(UserAction.CLICK)
+        // 监听路由参数变化（例如从 /article/1 跳转到 /article/2）
+        watch(() => props.id, async () => {
+            await fetchArticle()
         })
 
         onUnmounted(() => {
@@ -280,6 +292,7 @@ ${selected}
             newComment,
             loading,
             error,
+            liked,
             toggleLike,
             submitComment,
             onReply,
