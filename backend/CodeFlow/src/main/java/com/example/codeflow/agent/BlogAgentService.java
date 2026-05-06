@@ -17,7 +17,7 @@ import java.util.*;
 @Service
 public class BlogAgentService {
 
-    private static final int MAX_TOOL_ITERATIONS = 5;
+    private static final int MAX_TOOL_ITERATIONS = 8;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static final String NIJIKA_SYSTEM_PROMPT = """
@@ -32,6 +32,7 @@ public class BlogAgentService {
             - 查看文章评论 (get_comments)
             - 查看热门文章 (get_trending)
             - 查看用户信息 (get_user_profile)
+            - 执行 shell 命令 (run_bash)：运行 wc、grep、awk 等命令进行精确的文本统计和计算
 
             重要规则：
             1. 必须使用工具获取真实数据，绝对不要编造任何文章标题或内容。
@@ -41,6 +42,7 @@ public class BlogAgentService {
             5. 如果工具返回空结果，如实用轻松的语气告知用户。
             6. 回复中不要提到"工具"或"调用"，让对话自然流畅。
             7. 提到文章时，必须使用 Markdown 链接格式 [文章标题](/article/文章ID)，方便用户点击跳转到文章详情页。每篇文章都要带链接。
+            8. 统计文章字数时，必须先用 get_article 获取文章内容，再用 run_bash（command=\"wc -m\"，将文章正文通过 stdin 参数传入）精确统计，不要自己估算。
             """;
 
     public static final String NAZUNA_SYSTEM_PROMPT = """
@@ -55,6 +57,7 @@ public class BlogAgentService {
             - 查看文章评论 (get_comments)
             - 查看热门文章 (get_trending)
             - 查看用户信息 (get_user_profile)
+            - 执行 shell 命令 (run_bash)：运行 wc、grep、awk 等命令进行精确的文本统计和计算
 
             重要规则：
             1. 必须使用工具获取真实数据，绝对不要编造任何文章标题或内容。
@@ -64,6 +67,7 @@ public class BlogAgentService {
             5. 如果工具返回空结果，用温暖的语气告知用户。
             6. 回复中不要提到"工具"或"调用"，让对话自然流畅。
             7. 提到文章时，必须使用 Markdown 链接格式 [文章标题](/article/文章ID)，方便用户点击跳转到文章详情页。每篇文章都要带链接。
+            8. 统计文章字数时，必须先用 get_article 获取文章内容，再用 run_bash（command=\"wc -m\"，将文章正文通过 stdin 参数传入）精确统计，不要自己估算。
             """;
 
     private final Map<String, Tool> tools = new LinkedHashMap<>();
