@@ -94,10 +94,19 @@
         </button>
       </div>
 
-      <!-- 拖拽缩放手柄 -->
-      <div class="resize-grip">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M10 2V10H2" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- 边缘缩放手柄 -->
+      <div class="resize-edge resize-edge-n"  @mousedown="e => onResizeMouseDown(e, 'n')"></div>
+      <div class="resize-edge resize-edge-s"  @mousedown="e => onResizeMouseDown(e, 's')"></div>
+      <div class="resize-edge resize-edge-e"  @mousedown="e => onResizeMouseDown(e, 'e')"></div>
+      <div class="resize-edge resize-edge-w"  @mousedown="e => onResizeMouseDown(e, 'w')"></div>
+      <div class="resize-edge resize-edge-ne" @mousedown="e => onResizeMouseDown(e, 'ne')"></div>
+      <div class="resize-edge resize-edge-nw" @mousedown="e => onResizeMouseDown(e, 'nw')"></div>
+      <div class="resize-edge resize-edge-se" @mousedown="e => onResizeMouseDown(e, 'se')"></div>
+      <div class="resize-edge resize-edge-sw" @mousedown="e => onResizeMouseDown(e, 'sw')"></div>
+      <!-- 缩放拖拽手柄 -->
+      <div class="resize-grip" @mousedown="e => onResizeMouseDown(e, 'se')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 12L12 2M8 12L12 8M12 12V2H2" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
     </div>
@@ -222,14 +231,14 @@ export default {
       }
     }
 
-    const { panelStyle, onHeaderMouseDown, resetPosition } = useDraggable()
+    const { panelStyle, onHeaderMouseDown, onResizeMouseDown, resetPosition } = useDraggable()
     const parseContent = (text) => parseMarkdownLinks(text)
 
     return {
       showBubble, messages, input, loading, chatRef,
       sessions, activeSessionId,
       toggle, send, clearHistory, selectSession, newSession, removeSession,
-      parseContent, panelStyle, onHeaderMouseDown, resetPosition
+      parseContent, panelStyle, onHeaderMouseDown, onResizeMouseDown, resetPosition
     }
   }
 }

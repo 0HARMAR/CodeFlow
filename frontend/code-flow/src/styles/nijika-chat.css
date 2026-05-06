@@ -7,8 +7,6 @@
   width: 380px;
   min-width: 320px;
   min-height: 360px;
-  max-width: 520px;
-  max-height: 560px;
   height: 440px;
   background: #ffffff;
   border-radius: 16px;
@@ -16,7 +14,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  resize: both;
   animation: panel-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 999;
 }
@@ -424,17 +421,42 @@
   background: #fef2f2;
 }
 
-/* ---- 缩放拖拽手柄 ---- */
+/* ---- 边缘缩放手柄 ---- */
+
+.resize-edge {
+  position: absolute;
+  z-index: 10;
+}
+
+.resize-edge-n  { top: 0;    left: 8px;  right: 8px;  height: 6px; cursor: n-resize; }
+.resize-edge-s  { bottom: 0; left: 8px;  right: 8px;  height: 6px; cursor: s-resize; }
+.resize-edge-e  { top: 8px;  right: 0;   bottom: 8px; width: 6px;  cursor: e-resize; }
+.resize-edge-w  { top: 8px;  left: 0;    bottom: 8px; width: 6px;  cursor: w-resize; }
+.resize-edge-ne { top: 0;    right: 0;   width: 12px; height: 12px; cursor: ne-resize; }
+.resize-edge-nw { top: 0;    left: 0;    width: 12px; height: 12px; cursor: nw-resize; }
+.resize-edge-se { bottom: 0; right: 0;   width: 12px; height: 12px; cursor: se-resize; }
+.resize-edge-sw { bottom: 0; left: 0;    width: 12px; height: 12px; cursor: sw-resize; }
+
+/* ---- 右下角缩放拖拽手柄 ---- */
 
 .resize-grip {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-  opacity: 0.4;
+  bottom: 1px;
+  right: 1px;
+  width: 24px;
+  height: 24px;
+  cursor: se-resize;
+  opacity: 0.55;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
+  z-index: 11;
+  padding: 4px;
+  border-radius: 0 0 13px 0;
+  transition: opacity 0.15s;
+}
+
+.resize-grip:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.06);
 }
