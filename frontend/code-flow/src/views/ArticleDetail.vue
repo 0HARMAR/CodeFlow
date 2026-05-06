@@ -46,16 +46,31 @@
 
     <!-- comment  -->
     <div class="comment-section">
+      <h3 class="comment-section-title">Comments ({{ comments.length }})</h3>
+
       <div v-if="replyingTo" class="replying-tip">
-        replying to {{ replyingTo.author }}
-        <span @click="replyingTo = null" style="cursor:pointer">cancel</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 17 4 12 9 7"/>
+          <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+        </svg>
+        Replying to <strong>{{ replyingToName }}</strong>
+        <button class="replying-cancel" @click="replyingTo = null">Cancel</button>
       </div>
 
-      <textarea
-        v-model="newComment"
-        placeholder="write you comment...">
-      </textarea>
-      <button @click="submitComment">publish comment</button>
+      <div class="comment-input-row">
+        <textarea
+          v-model="newComment"
+          placeholder="Share your thoughts..."
+          rows="3">
+        </textarea>
+        <button class="submit-comment-btn" @click="submitComment" :disabled="!newComment.trim()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13"/>
+            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+          </svg>
+          Publish
+        </button>
+      </div>
     </div>
 
     <!-- comment list  -->
@@ -187,17 +202,112 @@ export default ArticleDetailLogic
 .comment-section {
   background: #fff;
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e8ecf1;
+  margin-bottom: 2rem;
 }
 
-.comment-section button {
-  background: #667eea;
-  color: white;
+.comment-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+}
+
+.replying-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.07);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+}
+
+.replying-tip strong {
+  color: #4f46e5;
+}
+
+.replying-cancel {
+  margin-left: auto;
+  background: none;
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 4px;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.replying-cancel:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.comment-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-input-row textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+  background: #fafbfc;
+}
+
+.comment-input-row textarea:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: #fff;
+}
+
+.comment-input-row textarea::placeholder {
+  color: #c0c6d0;
+}
+
+.submit-comment-btn {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.submit-comment-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+}
+
+.submit-comment-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.submit-comment-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .explain-btn {

@@ -246,6 +246,11 @@ ${selected}
             return author.value?.username || 'unknown'
         })
 
+        const replyingToName = computed(() => {
+            if (!replyingTo.value) return ''
+            return getCommentAuthorName(replyingTo.value.userId)
+        })
+
         const getCommentAuthorName = (userId) => {
             return commentAuthors.value[userId]?.username || 'unknown'
         }
@@ -298,6 +303,7 @@ ${selected}
             onReply,
             comments,
             replyingTo,
+            replyingToName,
             authorName,
             getCommentAuthorName,
             // 文本选择功能相关
