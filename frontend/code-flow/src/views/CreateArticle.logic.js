@@ -22,6 +22,7 @@ export default {
         const aiLoading = ref(false)
         const tagInput = ref('')
         const tags = ref([])
+        const tick = ref(0)
 
         const router = useRouter()
         const route = useRoute()
@@ -41,9 +42,13 @@ export default {
 
             editor.value = new Editor({
                 extensions: [StarterKit],
-                content: articleForm.content ? articleForm.content : '<p>write your content</p>',
+                content: articleForm.content ? articleForm.content : '',
                 onUpdate: ({editor}) => {
                     articleForm.content = editor.getHTML()
+                },
+                onSelectionUpdate: () => {
+                    // trigger reactive re-eval of isActive() in toolbar
+                    tick.value++
                 },
             })
 
@@ -192,6 +197,7 @@ ${content}
             aiLoading,
             tagInput,
             tags,
+            tick,
             checkComma,
             addTag,
             removeTag,
