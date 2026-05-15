@@ -107,7 +107,7 @@ export default {
                 console.log(toRaw(tags.value))
                 await articleStore.createArticle(articleForm, toRaw(tags.value))
                 alert('article publish success')
-                router.push('/articles')
+                router.push('/creation-center')
             } catch (e) {
                 console.error(e)
                 error.value = articleStore.error
@@ -180,7 +180,7 @@ ${content}
                 console.log(toRaw(tags.value))
                 await articleStore.createArticleDraft(articleForm, toRaw(tags.value))
                 alert('article publish success')
-                router.push('/articles')
+                router.push('/creation-center')
             } catch (e) {
                 console.error(e)
                 error.value = articleStore.error
