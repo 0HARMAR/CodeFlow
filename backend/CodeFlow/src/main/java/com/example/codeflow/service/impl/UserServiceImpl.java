@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Date;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -23,6 +24,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -31,8 +35,22 @@ public class UserServiceImpl implements UserService {
                 .orElseGet(() -> userRepository.findByEmail(loginRequest.getEmail()).orElse(null));
         
         // 直接验证密码，不再重新查询数据库
-        if (user == null || !user.getPassword().equals(loginRequest.getPassword())) {
+        if (user == null) {
             throw new RuntimeException("Invalid username/email or password");
+        }
+
+        // 新密码均为 BCrypt;兼容历史明文密码,登录成功后自动升级为 BCrypt
+        String stored = user.getPassword();
+        boolean ok = loginRequest.getPassword() != null && stored != null
+                && (stored.startsWith("$2")
+                    ? passwordEncoder.matches(loginRequest.getPassword(), stored)
+                    : stored.equals(loginRequest.getPassword()));
+        if (!ok) {
+            throw new RuntimeException("Invalid username/email or password");
+        }
+        if (!stored.startsWith("$2")) {
+            user.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
+            userRepository.save(user);
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
@@ -88,7 +106,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
-        user.setPassword(registerRequest.getPassword()); // 注意：实际应用中应该对密码进行加密
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); 
         user.setAvatar(registerRequest.getAvatar()); // 设置用户提供的头像
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
@@ -154,9 +172,9 @@ public class UserServiceImpl implements UserService {
         existingUser.setUpdatedAt(new Date());
         existingUser.setBio(user.getBio());
         
-        // 如果提供了新的密码，则更新密码
+        // 如果提供了新的密码，则更新密码(加密后存储)
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            existingUser.setPassword(user.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         
         // 保存并返回更新后的用户

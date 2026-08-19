@@ -34,12 +34,12 @@ public class UserController {
     private JwtUtil jwtUtil;
     
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             LoginResponse response = userService.login(loginRequest);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(e.getMessage());
         }
     }
     
@@ -73,21 +73,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(
-            @PathVariable Long id,
-            @RequestHeader("Authorization") String authorization) {
-
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("未登录");
-        }
-
-        String token = authorization.substring(7);
-        Long tokenUserId = jwtUtil.getUserIdFromToken(token);
-
-        if (!tokenUserId.equals(id)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("无权访问");
-        }
-
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         User user = userService.findById(id);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("用户不存在");
@@ -132,7 +118,6 @@ public class UserController {
         resp.put("id", user.getId());
         resp.put("username", user.getUsername());
         resp.put("bio", user.getBio());
-        resp.put("password", user.getPassword());
         resp.put("email", user.getEmail());
         resp.put("avatar", user.getAvatar());
 
