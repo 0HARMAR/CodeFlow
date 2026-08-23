@@ -3,6 +3,7 @@
 test_login.js
 uploads
 target
+.m2-repo
 
 backend/CodeFlow/.idea
 backend/CodeFlow/.mvn
@@ -21,3 +22,6 @@ package.json
 untitled/
 backend/CodeFlow/article_scores.csv
 frontend/code-flow/dist
+logs
+docs
+*.mvn

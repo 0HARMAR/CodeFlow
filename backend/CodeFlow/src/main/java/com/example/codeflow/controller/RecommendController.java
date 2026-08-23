@@ -18,8 +18,10 @@ public class RecommendController {
     private RecommendService recommendService;
 
     @GetMapping()
-    public ResponseEntity<List<ArticleDTO>> getRecommendArticles(@PathParam("size") Long size) {
-        Long userId = SecurityUtil.getCurrentUserId();
+    public ResponseEntity<List<ArticleDTO>> getRecommendArticles(@PathParam("size") Long size,
+                                                                 @RequestParam(value = "userId", required = false) Long userIdParam) {
+        // 优先使用显式传入的 userId（供 agent-service 内部调用），否则从 JWT 解析
+        Long userId = userIdParam != null ? userIdParam : SecurityUtil.getCurrentUserId();
         return ResponseEntity.ok(recommendService.getRecommendArticles(userId, size));
     }
 

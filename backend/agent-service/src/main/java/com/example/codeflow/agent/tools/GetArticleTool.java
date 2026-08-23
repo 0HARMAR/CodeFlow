@@ -2,8 +2,9 @@ package com.example.codeflow.agent.tools;
 
 import com.example.codeflow.agent.Tool;
 import com.example.codeflow.dto.ArticleDTO;
-import com.example.codeflow.service.ArticleService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
@@ -11,10 +12,10 @@ import java.util.Map;
 @Component
 public class GetArticleTool implements Tool {
 
-    private final ArticleService articleService;
+    private final RestClient contentClient;
 
-    public GetArticleTool(ArticleService articleService) {
-        this.articleService = articleService;
+    public GetArticleTool(@Qualifier("contentClient") RestClient contentClient) {
+        this.contentClient = contentClient;
     }
 
     @Override
@@ -37,10 +38,17 @@ public class GetArticleTool implements Tool {
     @Override
     public String execute(Map<String, Object> arguments) {
         Long id = ToolUtils.toLong(arguments.get("id"));
-        ArticleDTO article = articleService.getArticleById(id);
-        if (article == null) {
-            return ToolUtils.toJson(Map.of("error", "文章不存在", "id", id));
+        try {
+            ArticleDTO article = contentClient.get()
+                    .uri("/api/articles/{id}", id)
+                    .retrieve()
+                    .body(ArticleDTO.class);
+            if (article == null || article.getId() == null) {
+                return ToolUtils.toJson(Map.of("error", "文章不存在", "id", id));
+            }
+            return ToolUtils.toJson(ToolUtils.formatArticleDetail(article));
+        } catch (Exception e) {
+            return ToolUtils.toJson(Map.of("error", "获取文章失败: " + e.getMessage()));
         }
-        return ToolUtils.toJson(ToolUtils.formatArticleDetail(article));
     }
 }

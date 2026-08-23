@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # user-service: 用户/认证/头像
+            - id: user-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/users/**,/uploads/**
+            # content-service: 文章/标签/评论/阅读/搜索/推荐
+            - id: content-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/articles/**,/api/tags/**,/api/comments/**,/api/read/**,/api/recommend/**
+            # agent-service: AI Agent / 聊天 / 会话历史
+            - id: agent-service
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/agent/**,/api/chat
+          # 预检 OPTIONS 由网关直接应答（否则会被网关空 CORS 配置拒绝 403）
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins:
+                  - http://localhost
+                  - http://localhost:3000
+                  - http://localhost:8080
+                allowed-methods: "*"
+                allowed-headers: "*"
+                allow-credentials: true
+                max-age: 3600
+          # 网关与下游服务的 CORS 头去重，避免重复 ACAO
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

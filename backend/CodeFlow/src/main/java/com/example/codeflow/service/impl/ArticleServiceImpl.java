@@ -1,6 +1,17 @@
 package com.example.codeflow.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
 import com.example.codeflow.domain.recommend.ArticleMetricsCalculator;
+import static com.example.codeflow.domain.recommend.ArticleScoreCalculator.calculateScore;
 import com.example.codeflow.dto.ArticleDTO;
 import com.example.codeflow.model.Article;
 import com.example.codeflow.model.ArticleTag;
@@ -9,13 +20,6 @@ import com.example.codeflow.repository.ArticleTagRepository;
 import com.example.codeflow.service.ArticleService;
 import com.example.codeflow.service.RedisService;
 import com.example.codeflow.service.SearchService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static com.example.codeflow.domain.recommend.ArticleScoreCalculator.calculateScore;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -34,6 +38,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     SearchService searchService;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
     
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
@@ -53,6 +60,11 @@ public class ArticleServiceImpl implements ArticleService {
     
     @Override
     public ArticleDTO getArticleById(Long id) {
+        Article article = articleRepository.findById(id).orElse(null);
+        if (article == null) {
+            return null;
+        }
+
         // increase views
         String value = redisService.getValue("article:" + id);
         if (value != null) {
@@ -61,8 +73,7 @@ public class ArticleServiceImpl implements ArticleService {
         } else {
             redisService.setValue("article:" + id, "1", 86400);
         }
-
-        Article article = articleRepository.findById(id).orElse(null);
+        kafkaTemplate.send("article-views", id.toString(), "1");
         String views = redisService.getValue("article:" + id);
         article.setViews((views == null) ? 0 : Integer.parseInt(views));
         if (article == null) {

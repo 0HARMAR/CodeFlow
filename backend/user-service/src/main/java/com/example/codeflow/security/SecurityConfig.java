@@ -28,17 +28,13 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // ⚡ 公开:只读接口(文章/评论/推荐/阅读);写操作要求登录
+                // ⚡ 公开:登录注册、静态资源(头像);其余全部要求登录
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // AntPathRequestMatcher：静态资源走 ResourceHttpRequestHandler，
                         // 默认的 MvcRequestMatcher 对其不匹配，导致 /uploads/** 永远被拒（原单体遗留 bug）
                         .requestMatchers(new AntPathRequestMatcher("/uploads/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/articles/**",
-                                "/api/comments/**",
-                                "/api/recommend/**",
-                                "/api/read/**").permitAll()
+                        .requestMatchers("/api/users/login", "/api/users/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

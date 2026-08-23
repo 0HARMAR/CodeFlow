@@ -2,19 +2,21 @@ package com.example.codeflow.agent.tools;
 
 import com.example.codeflow.agent.Tool;
 import com.example.codeflow.dto.ArticleDTO;
-import com.example.codeflow.service.ArticleService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class SearchArticlesTool implements Tool {
 
-    private final ArticleService articleService;
+    private final RestClient contentClient;
 
-    public SearchArticlesTool(ArticleService articleService) {
-        this.articleService = articleService;
+    public SearchArticlesTool(@Qualifier("contentClient") RestClient contentClient) {
+        this.contentClient = contentClient;
     }
 
     @Override
@@ -37,7 +39,15 @@ public class SearchArticlesTool implements Tool {
     @Override
     public String execute(Map<String, Object> arguments) {
         String keyword = (String) arguments.get("keyword");
-        List<ArticleDTO> results = articleService.search(keyword);
-        return ToolUtils.formatArticleList(results);
+        try {
+            ArticleDTO[] results = contentClient.get()
+                    .uri("/api/articles/search?keyword={keyword}", keyword)
+                    .retrieve()
+                    .body(ArticleDTO[].class);
+            List<ArticleDTO> list = Arrays.asList(results == null ? new ArticleDTO[0] : results);
+            return ToolUtils.formatArticleList(list);
+        } catch (Exception e) {
+            return ToolUtils.toJson(Map.of("error", "搜索失败: " + e.getMessage()));
+        }
     }
 }

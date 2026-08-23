@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -28,17 +27,9 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // ⚡ 公开:只读接口(文章/评论/推荐/阅读);写操作要求登录
+                // ⚡ Agent/聊天端点全部要求登录（与原单体行为一致）
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // AntPathRequestMatcher：静态资源走 ResourceHttpRequestHandler，
-                        // 默认的 MvcRequestMatcher 对其不匹配，导致 /uploads/** 永远被拒（原单体遗留 bug）
-                        .requestMatchers(new AntPathRequestMatcher("/uploads/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/articles/**",
-                                "/api/comments/**",
-                                "/api/recommend/**",
-                                "/api/read/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -2,9 +2,11 @@ package com.example.codeflow.agent.tools;
 
 import com.example.codeflow.agent.Tool;
 import com.example.codeflow.dto.ArticleDTO;
-import com.example.codeflow.service.ArticleService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,10 +14,10 @@ import java.util.stream.Collectors;
 @Component
 public class GetArticlesByCategoryTool implements Tool {
 
-    private final ArticleService articleService;
+    private final RestClient contentClient;
 
-    public GetArticlesByCategoryTool(ArticleService articleService) {
-        this.articleService = articleService;
+    public GetArticlesByCategoryTool(@Qualifier("contentClient") RestClient contentClient) {
+        this.contentClient = contentClient;
     }
 
     @Override
@@ -40,8 +42,17 @@ public class GetArticlesByCategoryTool implements Tool {
     public String execute(Map<String, Object> arguments) {
         String category = (String) arguments.get("category");
         int limit = arguments.containsKey("limit") ? ToolUtils.toInt(arguments.get("limit")) : 5;
-        List<ArticleDTO> results = articleService.getArticlesByCategory(category);
-        List<ArticleDTO> limited = results.stream().limit(limit).collect(Collectors.toList());
-        return ToolUtils.formatArticleList(limited);
+        try {
+            ArticleDTO[] results = contentClient.get()
+                    .uri("/api/articles/category/{category}", category)
+                    .retrieve()
+                    .body(ArticleDTO[].class);
+            List<ArticleDTO> limited = Arrays.stream(results == null ? new ArticleDTO[0] : results)
+                    .limit(limit)
+                    .collect(Collectors.toList());
+            return ToolUtils.formatArticleList(limited);
+        } catch (Exception e) {
+            return ToolUtils.toJson(Map.of("error", "获取分类文章失败: " + e.getMessage()));
+        }
     }
 }

@@ -1,9 +1,7 @@
 package com.example.codeflow.config;
 
 import com.example.codeflow.model.Article;
-import com.example.codeflow.model.User;
 import com.example.codeflow.repository.ArticleRepository;
-import com.example.codeflow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -15,25 +13,10 @@ import java.util.Date;
 public class DataInitializer implements CommandLineRunner {
     
     @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
     private ArticleRepository articleRepository;
     
     @Override
     public void run(String... args) throws Exception {
-        // 初始化用户数据
-        if (userRepository.count() == 0) {
-            User user = new User();
-            user.setUsername("admin");
-            user.setEmail("admin@example.com");
-            user.setPassword("password"); // 实际应用中应该加密
-            user.setAvatar("https://via.placeholder.com/150");
-            user.setCreatedAt(new Date());
-            user.setUpdatedAt(new Date());
-            userRepository.save(user);
-        }
-        
         // 初始化文章数据
         if (articleRepository.count() == 0) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
