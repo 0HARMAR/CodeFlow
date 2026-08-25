@@ -18,6 +18,7 @@
         <span class="category">分类：{{ article.category }}</span>
         <span class="author">作者：{{ authorName }}</span>
         <span class="read-time">阅读时间：{{ readTime }}</span>
+        <span class="views">👁 浏览量：{{ article.views || 0 }}</span>
       </div>
     </div>
 
@@ -125,6 +126,12 @@ export default ArticleDetailLogic
 
 .category {
   background: #f0f0f0;
+  padding: 0.2rem 0.8rem;
+  border-radius: 16px;
+}
+
+.views {
+  background: rgba(0, 0, 0, 0.05);
   padding: 0.2rem 0.8rem;
   border-radius: 16px;
 }
